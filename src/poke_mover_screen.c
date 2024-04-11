@@ -2364,8 +2364,8 @@ static void CB2_PokeMover(void)
 
 static void CB2_ExitPokeMover(void)
 {
-    gFieldCallback = FieldTask_ReturnToPcMenu;
-    SetMainCallback2(CB2_ReturnToField);
+//    gFieldCallback = FieldTask_ReturnToPcMenu;
+//    SetMainCallback2(CB2_ReturnToField);
 }
 
 static void VBlankCB_PokeMover(void)

@@ -109,6 +109,6 @@ u32 TryWriteSpecialSaveSector(u8 sector, u8 *src);
 void Task_LinkFullSave(u8 taskId);
 
 // save_failed_screen.c
-void DoSaveFailedScreen(u8 saveType);
+WEAK void DoSaveFailedScreen(u8 saveType);
 
 #endif // GUARD_SAVE_H

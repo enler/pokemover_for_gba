@@ -431,8 +431,8 @@ u32 MidiKeyToCgbFreq(u8, u8, u8);
 void DummyFunc(void);
 void MPlayJumpTableCopy(MPlayFunc *mplayJumpTable);
 void SampleFreqSet(u32 freq);
-void m4aSoundVSyncOn(void);
-void m4aSoundVSyncOff(void);
+WEAK void m4aSoundVSyncOn(void);
+WEAK void m4aSoundVSyncOff(void);
 
 void m4aMPlayTempoControl(struct MusicPlayerInfo *mplayInfo, u16 tempo);
 void m4aMPlayVolumeControl(struct MusicPlayerInfo *mplayInfo, u16 trackBits, u16 volume);
