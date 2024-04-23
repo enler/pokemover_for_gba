@@ -4,8 +4,10 @@ ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM)
 endif
 
-NAME := pokemover_for_gba
-ELF := $(NAME).elf
+NAME	:= pokemover_for_gba
+ELF		:= $(NAME).elf
+ROM		:= $(NAME).gba
+SYM		:= $(NAME).sym
 
 PREFIX	:= $(DEVKITARM)/bin/arm-none-eabi-
 CC		:= $(PREFIX)gcc
@@ -22,6 +24,7 @@ SCANINC := tools/scaninc/scaninc
 RAMSCRGEN := tools/ramscrgen/ramscrgen
 GBAFIX	:= tools/gbafix/gbafix
 GFX		:= tools/gbagfx/gbagfx
+PERL	:= perl
 
 OBJ_DIR := build
 SUBDIRS := src data gflib
@@ -53,7 +56,7 @@ $(OBJ_DIR)/src/math_fast.o: CFLAGS := -mthumb-interwork -O3 -mtune=arm7tdmi -mar
 
 $(shell mkdir -p $(SUBDIRS:%=$(OBJ_DIR)/%))
 
-.PHONY: all clean tools cleantools
+.PHONY: all clean tools cleantools syms
 
 ifeq ($(NODEP),1)
 $(OBJ_DIR)/asm/%.o: asm_dep :=
@@ -66,8 +69,10 @@ $(OBJ_DIR)/gflib/%.o: c_dep = $(shell $(SCANINC) -I include -I gflib $*.c)
 $(OBJ_DIR)/data/%.o: data_dep = $(shell $(SCANINC) -I include -I gflib $*.s)
 endif
 
-all : $(ELF)
+all : $(ROM)
 	@:
+
+syms: $(SYM)
 
 include graphics_file_rules.mk
 
@@ -94,15 +99,24 @@ $(GFLIB_C_OBJS): $(OBJ_DIR)/%.o: %.c $$(c_dep)
 
 $(DATA_ASM_OBJS): $(OBJ_DIR)/%.o: %.s $$(data_dep)
 	$(PREPROC) $< charmap.txt | $(CPP) $(CPPFLAGS) | $(AS) $(ASFLAGS) -o $@
-#	$(GBAFIX) $@ --silent
 
 $(OBJ_DIR)/ld_script.ld: ld_script.txt
 	cd $(OBJ_DIR) && sed "s#tools/#../tools/#g" ../$< > ld_script.ld
 
 $(ELF): $(OBJ_DIR)/ld_script.ld $(ALL_OBJS) $(GFLIB)
 	cd $(OBJ_DIR) && $(LD) -Map ../$(NAME).map -T ../$< $(OBJS_REL) -o ../$@ $(LIBS)
+	$(GBAFIX) $@ -t"POKEMOVER" -cXXXX -m01 -r0 --silent
 
 $(GFLIB): $(GFLIB_C_OBJS)
 	$(AR) rcs $@ $(OBJ_DIR)/gflib/*.o
+
+$(ROM): $(ELF)
+	$(OBJCOPY) -O binary $< $@
+	$(GBAFIX) $@ -p --silent
+
+$(SYM): $(ELF)
+	$(OBJDUMP) -t $< | sort -u | grep -E "^0[2389]" | $(PERL) -p -e 's/^(\w{8}) (\w).{6} \S+\t(\w{8}) (\S+)$$/\1 \2 \3 \4/g' > $@
+
 clean:
 	rm -rf build
+	find . \( -iname '*.1bpp' -o -iname '*.4bpp' -o -iname '*.8bpp' -o -iname '*.gbapal' -o -iname '*.lz' -o -iname '*.rl' -o -iname '*.latfont' -o -iname '*.hwjpnfont' -o -iname '*.fwjpnfont' \) -exec rm {} +

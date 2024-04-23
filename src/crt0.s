@@ -74,46 +74,46 @@ _intr: @ 0x02000104
 	strh r0, [r3, #8]
 	and r1, r2, r2, lsr #16
 	mov ip, #0
-	ands r0, r1, #0x80
+	ands r0, r1, #INTR_FLAG_VCOUNT
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #1
+	ands r0, r1, #INTR_FLAG_SERIAL
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #2
+	ands r0, r1, #INTR_FLAG_TIMER3
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #4
+	ands r0, r1, #INTR_FLAG_HBLANK
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #8
+	ands r0, r1, #INTR_FLAG_VBLANK
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #0x10
+	ands r0, r1, #INTR_FLAG_TIMER0
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #0x20
+	ands r0, r1, #INTR_FLAG_TIMER1
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #0x40
+	ands r0, r1, #INTR_FLAG_TIMER2
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #0x100
+	ands r0, r1, #INTR_FLAG_DMA0
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #0x200
+	ands r0, r1, #INTR_FLAG_DMA1
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #0x400
+	ands r0, r1, #INTR_FLAG_DMA2
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #0x800
+	ands r0, r1, #INTR_FLAG_DMA3
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #0x1000
+	ands r0, r1, #INTR_FLAG_KEYPAD
 	bne _020001D4
 	add ip, ip, #4
-	ands r0, r1, #0x2000
+	ands r0, r1, #INTR_FLAG_GAMEPAK
 	strbne r0, [r3, #-0x17c]
 _020001D0:
 	bne _020001D0
@@ -127,7 +127,7 @@ _020001D4:
 	bic r3, r3, #0xdf
 	orr r3, r3, #0x1f
 	msr cpsr_fc, r3
-	ldr r1, =gIntrTableTemplate
+	ldr r1, =gIntrTable
 	add r1, r1, ip
 	ldr r0, [r1]
 	stmdb sp!, {lr}

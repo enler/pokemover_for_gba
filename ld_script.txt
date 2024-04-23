@@ -1,14 +1,25 @@
 SECTIONS {
-    . = 0x02000000;
+    . = 0x08000000;
     .text :
     ALIGN(4)
     {
         src/crt0.o(.text);
         src/*.o(.text);
+		gflib.a:agb_flash.o(.text.FlashTimerIntr);
 		gflib.a:agb_flash.o(.text.ProgramFlashSectorAndVerify);
+		gflib.a:agb_flash.o(.text.ReadFlash_Core);
+		gflib.a:agb_flash.o(.text.ReadFlash);
+		gflib.a:agb_flash.o(.text.ReadFlashId);
+		gflib.a:agb_flash.o(.text.SetFlashTimerIntr);
+		gflib.a:agb_flash.o(.text.ReadFlash1);
+		gflib.a:agb_flash.o(.text.SetReadFlash1);
+		gflib.a:agb_flash.o(.text.StartFlashTimer);
+		gflib.a:agb_flash.o(.text.StopFlashTimer);
 		gflib.a:agb_flash.o(.text.SwitchFlashBank);
-		gflib.a:agb_flash.o(.text.VerifyFlashSector);
 		gflib.a:agb_flash.o(.text.VerifyFlashSector_Core);
+		gflib.a:agb_flash.o(.text.VerifyFlashSector);
+		gflib.a:agb_flash_1m.o(.text.*);
+		gflib.a:agb_flash_mx.o(.text.*);
 		gflib.a:bg.o(.text.BgTileAllocOp);
 		gflib.a:bg.o(.text.ChangeBgX);
 		gflib.a:bg.o(.text.ChangeBgY);
@@ -48,25 +59,30 @@ SECTIONS {
 		gflib.a:braille.o(.text.DecompressGlyph_Braille);
 		gflib.a:braille.o(.text.FontFunc_Braille);
 		gflib.a:braille.o(.text.GetGlyphWidth_Braille);
+		gflib.a:dma3_manager.o(.text.ClearDma3Requests)
 		gflib.a:dma3_manager.o(.text.CheckForSpaceForDma3Request);
 		gflib.a:dma3_manager.o(.text.RequestDma3Copy);
+		gflib.a:dma3_manager.o(.text.ProcessDma3Requests)
 		gflib.a:dynamic_placeholder_text_util.o(.text.DynamicPlaceholderTextUtil_GetPlaceholderPtr);
+		gflib.a:gpu_regs.o(.text.CopyBufferedValuesToGpuRegs);
 		gflib.a:gpu_regs.o(.text.CopyBufferedValueToGpuReg);
 		gflib.a:gpu_regs.o(.text.DisableInterrupts)
+		gflib.a:gpu_regs.o(.text.EnableInterrupts)
+		gflib.a:gpu_regs.o(.text.InitGpuRegManager)
 		gflib.a:gpu_regs.o(.text.GetGpuReg);
 		gflib.a:gpu_regs.o(.text.SetGpuReg);
 		gflib.a:gpu_regs.o(.text.SyncRegIE);
 		gflib.a:gpu_regs.o(.text.UpdateRegDispstatIntrBits);
 		gflib.a:international_string_util.o(.text.GetMaxWidthInMenuTable)
-		gflib.a:load_save.o(.text.CopyPartyAndObjectsToSave);
-		gflib.a:load_save.o(.text.SaveObjectEvents);
-		gflib.a:load_save.o(.text.SavePlayerParty);
+		gflib.a:load_save.o(.text.CheckForFlashMemory)
 		gflib.a:malloc.o(.text.Alloc);
 		gflib.a:malloc.o(.text.AllocInternal);
 		gflib.a:malloc.o(.text.AllocZeroed);
 		gflib.a:malloc.o(.text.AllocZeroedInternal);
 		gflib.a:malloc.o(.text.Free);
 		gflib.a:malloc.o(.text.FreeInternal);
+		gflib.a:malloc.o(.text.InitHeap);
+		gflib.a:malloc.o(.text.PutFirstMemBlockHeader);
 		gflib.a:menu.o(.rodata.sStandardTextBox_WindowTemplates);
 		gflib.a:menu.o(.rodata.sTextSpeedFrameDelays);
 		gflib.a:menu.o(.text.AddTextPrinterForMessage);
@@ -86,8 +102,6 @@ SECTIONS {
 		gflib.a:menu.o(.text.DrawStdWindowFrame);
 		gflib.a:menu.o(.text.EraseYesNoWindow)
 		gflib.a:menu.o(.text.FreeTempTileDataBuffersIfPossible);
-		gflib.a:menu.o(.text.GetPlayerTextSpeed);
-		gflib.a:menu.o(.text.GetPlayerTextSpeedDelay)
 		gflib.a:menu.o(.text.InitMenu)
 		gflib.a:menu.o(.text.InitMenuInUpperLeftCorner);
 		gflib.a:menu.o(.text.InitMenuInUpperLeftCornerNormal)
@@ -160,7 +174,9 @@ SECTIONS {
 		gflib.a:pokemon_storage_system.o(.text.ZeroBoxMonAt);
 		gflib.a:random.o(.text.Random)
 		gflib.a:save.o(.text.CalculateChecksum);
+		gflib.a:save.o(.text.CopySaveSlotData);
 		gflib.a:save.o(.text.CopySectorSignatureByte);
+		gflib.a:save.o(.text.GetSaveValidStatus);
 		gflib.a:save.o(.text.HandleReplaceSector);
 		gflib.a:save.o(.text.HandleReplaceSectorAndVerify);
 		gflib.a:save.o(.text.HandleWriteIncrementalSector);
@@ -169,7 +185,10 @@ SECTIONS {
 		gflib.a:save.o(.text.LinkFullSave_ReplaceLastSector);
 		gflib.a:save.o(.text.LinkFullSave_SetLastSectorSignature);
 		gflib.a:save.o(.text.LinkFullSave_WriteSector);
+		gflib.a:save.o(.text.LoadGameSave);
+		gflib.a:save.o(.text.ReadFlashSector);
 		gflib.a:save.o(.text.RestoreSaveBackupVarsAndIncrement);
+		gflib.a:save.o(.text.Save_ResetSaveCounters);
 		gflib.a:save.o(.text.SetDamagedSectorBits);
 		gflib.a:save.o(.text.TryWriteSector);
 		gflib.a:save.o(.text.UpdateSaveAddresses);
@@ -310,6 +329,7 @@ SECTIONS {
 		gflib.a:text.o(.text.RenderFont);
 		gflib.a:text.o(.text.RenderText);
 		gflib.a:text.o(.text.RunTextPrinters)
+		gflib.a:text.o(.text.SetDefaultFontsPointer)
 		gflib.a:text.o(.text.TextPrinterClearDownArrow);
 		gflib.a:text.o(.text.TextPrinterDrawDownArrow);
 		gflib.a:text.o(.text.TextPrinterInitDownArrowCounters);
@@ -343,7 +363,7 @@ SECTIONS {
         *libgcc.a:_divsi3.o(.text)
         *libgcc.a:_modsi3.o(.text);
         *libgcc.a:_dvmd_tls.o(.text);
-        *libgcc.a:_thumb1_case_shi.o(.text*);
+        *libgcc.a:_thumb1_case_shi.o(.text);
         *libgcc.a:_thumb1_case_uqi.o(.text);
         *libgcc.a:_thumb1_case_uhi.o(.text);
     } =0
@@ -353,6 +373,14 @@ SECTIONS {
     {
         src/*.o(.rodata*);
         data/*.o(.rodata);
+		. = ALIGN(4);
+		gflib.a:agb_flash_1m.o(.rodata.AgbLibFlashVersion);
+		gflib.a:agb_flash_1m.o(.rodata.sSetupInfos);
+		gflib.a:agb_flash_mx.o(.rodata.mxMaxTime);
+		gflib.a:agb_flash_mx.o(.rodata.MX29L010);
+		gflib.a:agb_flash_mx.o(.rodata.DefaultFlash);
+		gflib.a:agb_flash_le.o(.rodata.leMaxTime);
+		gflib.a:agb_flash_le.o(.rodata.LE26FV10N1TS);
 		gflib.a:bg.o(.rodata.CSWTCH.75);
 		gflib.a:braille.o(.rodata.sFont_Braille);
 		gflib.a:braille.o(.rodata.sScrollDistances);
@@ -1409,22 +1437,42 @@ SECTIONS {
 		gflib.a:util.o(.rodata.gBitTable);
     } =0
 
-    .data :
-    ALIGN(4)
+	__data_orig__ = .;
+	. = 0x2000000;
+    .data ALIGN(4):
+	AT (ADDR(.rodata) + SIZEOF ( .rodata ))
     {
+		__data_start__ = .;
         src/*.o(.data);
         gflib/*.o(.data);
+		__data_end__ = .;
+		gHeap = .;
+		. = 0x40000;
+		gHeapEnd = .;
     } =0
 
+
+
+	. = 0x3000000;
     bss_start = .;
     .bss :
     ALIGN(4)
     {
         src/*.o(.bss);
+		gflib.a:agb_flash.o(.bss.EraseFlashChip);
 		gflib.a:agb_flash.o(.bss.EraseFlashSector);
+		gflib.a:agb_flash.o(.bss.PollFlashStatus);
 		gflib.a:agb_flash.o(.bss.ProgramFlashByte);
 		gflib.a:agb_flash.o(.bss.ProgramFlashSector);
+		gflib.a:agb_flash.o(.bss.WaitForFlashWrite);
 		gflib.a:agb_flash.o(.bss.gFlash);
+		gflib.a:agb_flash.o(.bss.gFlashNumRemainingBytes);
+		gflib.a:agb_flash.o(.bss.gFlashMaxTime);
+		gflib.a:agb_flash.o(.bss.gFlashTimeoutFlag);
+		gflib.a:agb_flash.o(.bss.sTimerCount);
+		gflib.a:agb_flash.o(.bss.sTimerNum);
+		gflib.a:agb_flash.o(.bss.sTimerReg);
+		gflib.a:agb_flash.o(.bss.sSavedIme);
 		gflib.a:bg.o(.bss.gWindowTileAutoAllocEnabled);
 		gflib.a:bg.o(.bss.sDmaBusyBitfield);
 		gflib.a:bg.o(.bss.sGpuBgConfigs);
@@ -1443,6 +1491,7 @@ SECTIONS {
 		gflib.a:load_save.o(.bss.gSaveBlock1Ptr);
 		gflib.a:load_save.o(.bss.gSaveBlock2Ptr);
 		gflib.a:malloc.o(.bss.sHeapStart);
+		gflib.a:malloc.o(.bss.sHeapSize);
 		gflib.a:menu.o(.bss.sMapNamePopupWindowId);
 		gflib.a:menu.o(.bss.sMenu);
 		gflib.a:menu.o(.bss.sPaletteNum);
@@ -1462,6 +1511,7 @@ SECTIONS {
 		gflib.a:pokemon_storage_system.o(.bss.sPreviousBoxOption);
 		gflib.a:random.o(.bss.gRngValue);
 		gflib.a:random.o(.bss.sRandCount);
+		gflib.a:save.o(.bss.gGameContinueCallback);
 		gflib.a:save.o(.bss.gDamagedSaveSectors);
 		gflib.a:save.o(.bss.gIncrementalSectorId);
 		gflib.a:save.o(.bss.gLastKnownGoodSector);
@@ -1471,6 +1521,7 @@ SECTIONS {
 		gflib.a:save.o(.bss.gReadWriteSector);
 		gflib.a:save.o(.bss.gSaveCounter);
 		gflib.a:save.o(.bss.gSaveDataBuffer);
+		gflib.a:save.o(.bss.gSaveFileStatus);
 		gflib.a:sprite.o(.bss.gAffineAnimsDisabled);
 		gflib.a:sprite.o(.bss.gOamLimit);
 		gflib.a:sprite.o(.bss.gOamMatrices);

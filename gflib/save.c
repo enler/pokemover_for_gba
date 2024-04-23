@@ -790,7 +790,6 @@ bool8 LinkFullSave_Init(void)
     if (gFlashMemoryPresent != TRUE)
         return TRUE;
     UpdateSaveAddresses();
-    CopyPartyAndObjectsToSave();
     RestoreSaveBackupVarsAndIncrement(gRamSaveSectorLocations);
     return FALSE;
 }
@@ -885,14 +884,8 @@ u8 LoadGameSave(u8 saveType)
     case SAVE_NORMAL:
     default:
         status = TryLoadSaveSlot(FULL_SAVE_SLOT, gRamSaveSectorLocations);
-        CopyPartyAndObjectsFromSave();
         gSaveFileStatus = status;
         gGameContinueCallback = 0;
-        break;
-    case SAVE_HALL_OF_FAME:
-        status = TryLoadSaveSector(SECTOR_ID_HOF_1, gDecompressionBuffer, SECTOR_DATA_SIZE);
-        if (status == SAVE_STATUS_OK)
-            status = TryLoadSaveSector(SECTOR_ID_HOF_2, &gDecompressionBuffer[SECTOR_DATA_SIZE], SECTOR_DATA_SIZE);
         break;
     }
 
