@@ -8,6 +8,7 @@
 #include "poke_mover_screen.h"
 #include "save.h"
 #include "text.h"
+#include "text_ext.h"
 
 extern u8 gHeapEnd[];
 
@@ -63,7 +64,6 @@ void AgbMain()
     ResetSpriteData();
     InitKeys();
 
-    SetDefaultFontsPointer();
     ClearDma3Requests();
 
     gSaveBlock1Ptr = Alloc(sizeof(struct SaveBlock1));
@@ -77,9 +77,12 @@ void AgbMain()
     Save_ResetSaveCounters();
     LoadGameSave(SAVE_NORMAL);
 
+    InitBppConvTable();
+
     ShowPokeMoverScreen(0);
 
-    for (;;) {
+    for (;;)
+    {
         ReadKeys();
         if (gMain.callback2)
             gMain.callback2();

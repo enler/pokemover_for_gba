@@ -27,6 +27,7 @@
 #include "string_util_gsc.h"
 #include "task.h"
 #include "text.h"
+#include "text_ext.h"
 #include "text_window.h"
 #include "window.h"
 #include "constants/rgb.h"
@@ -865,7 +866,7 @@ static void DrawOptions(const struct MenuAction *menuAction, u8 numOptions, cons
 
 static void DrawDelayedMessage(u8 windowId, const u8 *message, u8 delayedFrames) {
     FillWindowPixelBuffer(0, PIXEL_FILL(1));
-    AddTextPrinterParameterized2(0, FONT_NORMAL, message, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+    DrawText(0, message, 0, 0, NULL, TRUE);
     sPokeMoverContext->frameDelay = delayedFrames;
 }
 
@@ -1158,12 +1159,10 @@ static bool8 DrawLegalityView(u8 index, u8 tilemapTop, struct LegalityCheckResul
                 str[2] = EXT_CTRL_CODE_COLOR;
                 str[3] = TEXT_COLOR_RED;
                 ConvertIntToDecimalStringN(&str[4], legalityCheckresult->minimumLevel, STR_CONV_MODE_LEFT_ALIGN, 3);
-                AddTextPrinterParameterized5(sPokeMoverContext->legalityView.windowIds[index], FONT_NORMAL, str, 32, 0, 0, NULL, 0, 0);    
             }
             else {
-                ConvertIntToDecimalStringN(&str[1], level, STR_CONV_MODE_LEFT_ALIGN, 3);
-                AddTextPrinterParameterized5(sPokeMoverContext->legalityView.windowIds[index], FONT_NORMAL, str, 32, 0, 0, NULL, 0, 0);    
-            }
+                ConvertIntToDecimalStringN(&str[1], level, STR_CONV_MODE_LEFT_ALIGN, 3);            }
+            DrawText(sPokeMoverContext->legalityView.windowIds[index], str, 32, 0, NULL, TRUE);
             sPokeMoverContext->legalityView.state++;
             break;
         case 2:
@@ -1172,11 +1171,11 @@ static bool8 DrawLegalityView(u8 index, u8 tilemapTop, struct LegalityCheckResul
             if (language == LANGUAGE_ENGLISH)
                 language = LANGUAGE_CHINESE;
             if (legalityCheckresult->nameInvalidFlags == 0) {
-                AddTextPrinterParameterized5(sPokeMoverContext->legalityView.windowIds[index], FONT_NORMAL, str, 32, 16, 0, NULL, 0, 0);
+                DrawText(sPokeMoverContext->legalityView.windowIds[index], str, 32, 16, NULL, TRUE);
             }
             else {
                 HighlightInvalidNameChars(str, gStringVar4, legalityCheckresult->nameInvalidFlags, language);
-                AddTextPrinterParameterized5(sPokeMoverContext->legalityView.windowIds[index], FONT_NORMAL, gStringVar4, 32, 16, 0, NULL, 0, 0);
+                DrawText(sPokeMoverContext->legalityView.windowIds[index], gStringVar4, 32, 16, NULL, TRUE);
             }
             sPokeMoverContext->legalityView.state++;
             break;
@@ -1185,9 +1184,9 @@ static bool8 DrawLegalityView(u8 index, u8 tilemapTop, struct LegalityCheckResul
                 move = GetBoxMonData(boxMon, MON_DATA_MOVE1 + i, NULL);
                 if (move == MOVE_NONE) continue;
                 if ((legalityCheckresult->moveLegalFlags & (1 << i)) != 0)
-                    AddTextPrinterParameterized5(sPokeMoverContext->legalityView.windowIds[index], FONT_NORMAL, gMoveNames[move], 96 + (i & 1) * 64, (i / 2) * 16, 0, NULL, 0, 0);
+                    DrawText(sPokeMoverContext->legalityView.windowIds[index], gMoveNames[move], 96 + (i & 1) * 64, (i / 2) * 16, NULL, TRUE);
                 else
-                    AddTextPrinterParameterized4(sPokeMoverContext->legalityView.windowIds[index], FONT_NORMAL, 96 + (i & 1) * 64, (i / 2) * 16, 0, 0, colors, 0, gMoveNames[move]);
+                    DrawText(sPokeMoverContext->legalityView.windowIds[index], gMoveNames[move], 96 + (i & 1) * 64, (i / 2) * 16, colors, TRUE);
             }
             sPokeMoverContext->legalityView.state++;
             break;
@@ -1248,7 +1247,7 @@ static bool8 DrawLeftViewOfBox(struct Task *task) {
         ConvertIntToDecimalStringN(StringCopy(gStringVar4, gText_TrainerCardIDNo), (sPokeMoverContext->baseData.trainerID[0] << 8) | sPokeMoverContext->baseData.trainerID[1], STR_CONV_MODE_LEADING_ZEROS, 5);
         PutWindowTilemap(sPokeMoverContext->boxView.gscPlayerTrainerIdWinId);
         FillWindowPixelBuffer(sPokeMoverContext->boxView.gscPlayerTrainerIdWinId, PIXEL_FILL(0));
-        AddTextPrinterParameterized4(sPokeMoverContext->boxView.gscPlayerTrainerIdWinId, FONT_NORMAL, 2, 3, 0, 0, colors, 0, gStringVar4);
+        DrawText(sPokeMoverContext->boxView.gscPlayerTrainerIdWinId, gStringVar4, 2, 3, colors, TRUE);
         task->tBoxState++;
         break;
     case 7:
@@ -1262,7 +1261,7 @@ static bool8 DrawLeftViewOfBox(struct Task *task) {
             DecodeGSCString(gStringVar4, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.gameVer, sPokeMoverContext->baseData.gameLang);
         PutWindowTilemap(sPokeMoverContext->boxView.gscPlayerNameWinId);
         FillWindowPixelBuffer(sPokeMoverContext->boxView.gscPlayerNameWinId, PIXEL_FILL(0));
-        AddTextPrinterParameterized4(sPokeMoverContext->boxView.gscPlayerNameWinId, FONT_NORMAL, 2, 3, 0, 0, colors, 0, gStringVar4);
+        DrawText(sPokeMoverContext->boxView.gscPlayerNameWinId, gStringVar4, 2, 3, colors, TRUE);
         task->tBoxState++;
         break;
     case 8:
@@ -1385,12 +1384,11 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
     case 0:
         ExitLinkPokeMover();
         FillWindowPixelBuffer(0, PIXEL_FILL(1));
-        StringExpandPlaceholders(gStringVar4, gMsgUsageStep1OfSendingTransferToolOverExploit);
-        AddTextPrinterForMessage(TRUE);
+        DrawMessage(gMsgUsageStep1OfSendingTransferToolOverExploit, 2);
         task->tSubState++;
         break;
     case 1:
-        if (!gPaletteFade.active && !RunTextPrintersAndIsPrinter0Active())
+        if (!gPaletteFade.active && HandleMessage())
         {
             DrawOptions(sPokeMoverLanguageOptions, ARRAY_COUNT(sPokeMoverLanguageOptions), &sWindowTemplate_PokeMoverLanguageOptions, &task->tWindowId);
             CopyWindowToVram(task->tWindowId, COPYWIN_FULL);
@@ -1408,16 +1406,15 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         break;
     case 3:
         FillWindowPixelBuffer(0, PIXEL_FILL(1));
-        StringExpandPlaceholders(gStringVar4, gMsgUsageStep2OfSendingTransferToolOverExploit);
-        AddTextPrinterForMessage(TRUE);
+        DrawMessage(gMsgUsageStep2OfSendingTransferToolOverExploit, 2);
         task->tSubState++;
         break;
     case 4:
-        if (!gPaletteFade.active && !RunTextPrintersAndIsPrinter0Active())
+        if (!gPaletteFade.active && HandleMessage())
         {
             TryHandshakeWithGSC();
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            AddTextPrinterParameterized2(0, FONT_NORMAL, gTextLinkToGSC, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+            DrawText(0, gTextLinkToGSC, 0, 0, NULL, TRUE);
             sPokeMoverContext->linkStatus.status = ~STATE_IDLE;
             sPokeMoverContext->linkStatus.timer = 0;
             task->tSubState++;
@@ -1426,8 +1423,7 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
     case 5:
         if (sPokeMoverContext->linkStatus.status == STATE_IDLE) {
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            StringExpandPlaceholders(gStringVar4, gMsgUsageStep3OfSendingTransferToolOverExploit);
-            AddTextPrinterForMessage(TRUE);
+            DrawMessage(gMsgUsageStep3OfSendingTransferToolOverExploit, 2);
             DecompressAndLoadBgGfxUsingHeap(0, crystalExploitTotorial_Gfx, 0, 1, 0);
             LoadPalette(crystalExploitTotorial_Pal, BG_PLTT_ID(8), 32);
             task->tSubState++;
@@ -1439,29 +1435,28 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         }
         break;
     case 6:
-        if (!gPaletteFade.active && !RunTextPrintersAndIsPrinter0Active() && !FreeTempTileDataBuffersIfPossible()) {
+        if (!gPaletteFade.active && !FreeTempTileDataBuffersIfPossible() && HandleMessage()) {
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            StringExpandPlaceholders(gStringVar4, gMsgUsageStep4OfSendingTransferToolOverExploit);
-            AddTextPrinterForMessage(TRUE);
+            DrawMessage(gMsgUsageStep4OfSendingTransferToolOverExploit, 2);
             task->tTutorialFrame = 0;
             task->tTutorialCounter = 0;
             task->tSubState++;
         }
         break;
     case 7:
-        if (!gPaletteFade.active && !RunTextPrintersAndIsPrinter0Active()) {
+        if (!gPaletteFade.active && HandleMessage()) {
             TryEnteringGSCTradeView();
             FillBgTilemapBufferRect(0, 0, 5, 2, 20, 10, 0);
             ScheduleBgCopyTilemapToVram(0);
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            AddTextPrinterParameterized2(0, FONT_NORMAL, gTextSending, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+            DrawText(0, gTextSending, 0, 0, NULL, TRUE);
             sPokeMoverContext->linkStatus.timer = 0;
             task->tSubState++;
         }
         else {
             if (task->tTutorialCounter == 0) {
                 task->tTutorialCounter = 90;
-                CopyToBgTilemapBufferRect(0, (const u16*)&crystalExploitTotorial_Tilemap[0] + 20 * 10 * task->tTutorialFrame, 5, 2, 20, 10);
+                CopyToBgTilemapBufferRect(0, (const u16 *)&crystalExploitTotorial_Tilemap[0] + 20 * 10 * task->tTutorialFrame, 5, 2, 20, 10);
                 ScheduleBgCopyTilemapToVram(0);
                 if (++task->tTutorialFrame >= 5)
                     task->tTutorialFrame = 0;
@@ -1917,7 +1912,7 @@ static int HandleRecvingView(struct Task *task) {
             sPokeMoverContext->boxView.boxDataSource->GetLocalBoxTitle(sPokeMoverContext->boxView.currentBox, tempBuff);
             StringCopy(gStringVar1, tempBuff);
             StringExpandPlaceholders(gStringVar2, ptr);
-            AddTextPrinterParameterized2(0, FONT_NORMAL, gStringVar2, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+            DrawText(0, gStringVar2, 0, 0, NULL, TRUE);
             CreateYesNoMenu(&sWindowTemplates[3], 532, 14, 0);
             task->tSubState++;
             break;
@@ -1976,14 +1971,14 @@ static int HandleRecvingView(struct Task *task) {
             break;
         case 23:
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            AddTextPrinterParameterized2(0, FONT_NORMAL, gTextLinking, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+            DrawText(0, gTextLinking, 0, 0, NULL, TRUE);
             memset(&sPokeMoverContext->linkStatus, 0, sizeof(sPokeMoverContext->linkStatus));
             sPokeMoverContext->linkStatus.currentBox = sPokeMoverContext->boxView.gscBox;
             task->tSubState++;
             break;
         case 27:
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            AddTextPrinterParameterized2(0, FONT_NORMAL, gTextProcessing, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+            DrawText(0, gTextProcessing, 0, 0, NULL, TRUE);
             task->tSubState++;
             break;
         case 28:
@@ -1994,8 +1989,7 @@ static int HandleRecvingView(struct Task *task) {
             result = DoGSCBoxMonConversion(sPokeMoverContext->boxView.localBox, bases, tempBuff);
             if (result > 0) {
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
-                StringExpandPlaceholders(gStringVar4, gTextUsageOfLegalityView);
-                AddTextPrinterForMessage(TRUE);
+                DrawMessage(gTextUsageOfLegalityView, 2);
                 task->tTransferingMonNum = result;
                 memcpy(sPokeMoverContext->convertedGSCBoxMons, tempBuff, task->tTransferingMonNum);
                 task->tSubState += 2;
@@ -2011,7 +2005,7 @@ static int HandleRecvingView(struct Task *task) {
             }
             break;
         case 30:
-            if (!gPaletteFade.active && !RunTextPrintersAndIsPrinter0Active())
+            if (!gPaletteFade.active && HandleMessage())
             {
                 ClearDialogWindowAndFrame(0, TRUE);
                 task->tLegalityViewState = 0;
@@ -2037,7 +2031,7 @@ static int HandleRecvingView(struct Task *task) {
         case 32:
             DrawStandardTextBox();
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            AddTextPrinterParameterized2(0, FONT_NORMAL, gTextSaving, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+            DrawText(0, gTextSaving, 0, 0, NULL, TRUE);
             task->tSubState++;
             break;
         case 33:
@@ -2094,7 +2088,7 @@ static s32 HandleInfoView(struct Task * task) {
     switch(task->tSubState) {
         case 0:
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            AddTextPrinterParameterized2(0, FONT_NORMAL, gTextAskForInfo, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+            DrawText(0, gTextAskForInfo, 0, 0, NULL, TRUE);
             task->tSubState++;
             break;
         case 1:
@@ -2115,27 +2109,23 @@ static s32 HandleInfoView(struct Task * task) {
             }
             break;
         case 3:
-            StringExpandPlaceholders(gStringVar4, gTextInfoA1);
-            AddTextPrinterForMessage(TRUE);
+            DrawMessage(gTextInfoA1, 2);
             task->tSubState = 7;
             break;
         case 4:
-            StringExpandPlaceholders(gStringVar4, gTextInfoA2);
-            AddTextPrinterForMessage(TRUE);
+            DrawMessage(gTextInfoA2, 2);
             task->tSubState = 7;
             break;
         case 5:
-            StringExpandPlaceholders(gStringVar4, gTextInfoA3);
-            AddTextPrinterForMessage(TRUE);
+            DrawMessage(gTextInfoA3, 2);
             task->tSubState = 7;
             break;
         case 6:
-            StringExpandPlaceholders(gStringVar4, gTextInfoA4);
-            AddTextPrinterForMessage(TRUE);
+            DrawMessage(gTextInfoA4, 2);
             task->tSubState = 7;
             break;
         case 7:
-            if (!gPaletteFade.active && !RunTextPrintersAndIsPrinter0Active())
+            if (!gPaletteFade.active && HandleMessage())
             {
                 task->tSubState = 0;
             }
@@ -2156,7 +2146,7 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
     {
         case 0:
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            AddTextPrinterParameterized2(0, FONT_NORMAL, gMsgAskForNext, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+            DrawText(0, gMsgAskForNext, 0, 0, NULL, TRUE);
             task->tState++;
             break;
         case 1:
@@ -2171,7 +2161,7 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
                 ClearStdWindowAndFrame(task->tWindowId, TRUE);
                 RemoveWindow(task->tWindowId);
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
-                AddTextPrinterParameterized2(0, FONT_NORMAL, gMsgAskForConsole, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+                DrawText(0, gMsgAskForConsole, 0, 0, NULL, TRUE);
                 task->tState = 3;
             }
             else if (task->tSelectedOption == 1)
@@ -2179,8 +2169,7 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
                 ClearStdWindowAndFrame(task->tWindowId, TRUE);
                 RemoveWindow(task->tWindowId);
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
-                StringExpandPlaceholders(gStringVar4, gTextUsageOfTranfering);
-                AddTextPrinterForMessage(TRUE);
+                DrawMessage(gTextUsageOfTranfering, 2);
                 SetupLinkPokeMover(CB_NotifyStatusChanged);
                 task->tState = 8;
             }
@@ -2207,8 +2196,7 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
                 ClearStdWindowAndFrame(task->tWindowId, TRUE);
                 RemoveWindow(task->tWindowId);
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
-                StringExpandPlaceholders(gStringVar4, gMsgUsageOfSendingTransferTool);
-                AddTextPrinterForMessage(TRUE);
+                DrawMessage(gMsgUsageOfSendingTransferTool, 2);
                 task->tState++;
             }
             else if (result == 1) {
@@ -2224,11 +2212,11 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
             }
             break;
         case 5:
-            if (!gPaletteFade.active && !RunTextPrintersAndIsPrinter0Active())
+            if (!gPaletteFade.active && HandleMessage())
             {
                 memset(&sPokeMoverContext->mbParam, 0, sizeof(sPokeMoverContext->mbParam));
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
-                AddTextPrinterParameterized2(0, FONT_NORMAL, gTextSending, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+                DrawText(0, gTextSending, 0, 0, NULL, TRUE);
                 task->tState++;
                 task->tSubState = 0;
             }
@@ -2242,10 +2230,10 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
                 task->tState = 0;
             break;
         case 8:
-            if (!gPaletteFade.active && !RunTextPrintersAndIsPrinter0Active())
+            if (!gPaletteFade.active && HandleMessage())
             {
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
-                AddTextPrinterParameterized2(0, FONT_NORMAL, gTextLinking, 0, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+                DrawText(0, gTextLinking, 0, 0, NULL, TRUE);
                 task->tState++;
                 task->tSubState = 0;
             }
@@ -2339,12 +2327,11 @@ static void Task_SetupPokeMover(u8 taskId)
             break;
         case 14:
             SetVBlankCallback(VBlankCB_PokeMover);
-            StringExpandPlaceholders(gStringVar4, gMsgWelcomeForPokeMover);
-            AddTextPrinterForMessage(TRUE);
+            DrawMessage(gMsgWelcomeForPokeMover, 2);
             task->tState++;
             break;
         case 15:
-            if (!gPaletteFade.active && !RunTextPrintersAndIsPrinter0Active())
+            if (!gPaletteFade.active && HandleMessage())
             {
                 task->tState = 0;
                 gTasks[taskId].func = Task_HandlePokeMoverMenu;

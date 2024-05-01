@@ -16,6 +16,7 @@
 #include "string_util.h"
 #include "strings.h"
 #include "task.h"
+#include "text_ext.h"
 #include "text_window.h"
 #include "window.h"
 #include "constants/songs.h"
@@ -947,10 +948,10 @@ void RedrawMenuCursor(u8 oldPos, u8 newPos)
 {
     u8 width, height;
 
-    width = GetMenuCursorDimensionByFont(sMenu.fontId, 0);
-    height = GetMenuCursorDimensionByFont(sMenu.fontId, 1);
+    width = 8;
+    height = 15;
     FillWindowPixelRect(sMenu.windowId, PIXEL_FILL(1), sMenu.left, sMenu.optionHeight * oldPos + sMenu.top, width, height);
-    AddTextPrinterParameterized(sMenu.windowId, sMenu.fontId, gText_SelectorArrow3, sMenu.left, sMenu.optionHeight * newPos + sMenu.top, 0, 0);
+    DrawText(sMenu.windowId, gText_SelectorArrow3, sMenu.left, sMenu.optionHeight * newPos + sMenu.top, NULL, TRUE);
 }
 
 u8 Menu_MoveCursor(s8 cursorDelta)
@@ -1605,7 +1606,7 @@ void PrintMenuTable(u8 windowId, u8 itemCount, const struct MenuAction *menuActi
     u32 i;
 
     for (i = 0; i < itemCount; i++)
-        AddTextPrinterParameterized(windowId, 1, menuActions[i].text, 8, (i * 16) + 1, TEXT_SKIP_DRAW, NULL);
+        DrawText(windowId, menuActions[i].text, 8, (i * 16) + 1, NULL, FALSE);
 
     CopyWindowToVram(windowId, COPYWIN_GFX);
 }
@@ -1644,21 +1645,7 @@ void CreateYesNoMenu(const struct WindowTemplate *window, u16 baseTileNum, u8 pa
     sYesNoWindowId = AddWindow(window);
     DrawStdFrameWithCustomTileAndPalette(sYesNoWindowId, TRUE, baseTileNum, paletteNum);
 
-    printer.currentChar = gText_YesNo;
-    printer.windowId = sYesNoWindowId;
-    printer.fontId = FONT_NORMAL;
-    printer.x = 8;
-    printer.y = 1;
-    printer.currentX = printer.x;
-    printer.currentY = printer.y;
-    printer.fgColor = GetFontAttribute(FONT_NORMAL, FONTATTR_COLOR_FOREGROUND);
-    printer.bgColor = GetFontAttribute(FONT_NORMAL, FONTATTR_COLOR_BACKGROUND);
-    printer.shadowColor = GetFontAttribute(FONT_NORMAL, FONTATTR_COLOR_SHADOW);
-    printer.unk = GetFontAttribute(FONT_NORMAL, FONTATTR_UNKNOWN);
-    printer.letterSpacing = 0;
-    printer.lineSpacing = 0;
-
-    AddTextPrinter(&printer, TEXT_SKIP_DRAW, NULL);
+    DrawText(sYesNoWindowId, gText_YesNo, 8, 1, NULL, FALSE);
     InitMenuInUpperLeftCornerNormal(sYesNoWindowId, 2, initialCursorPos);
 }
 

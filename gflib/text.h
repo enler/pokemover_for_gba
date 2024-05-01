@@ -135,7 +135,7 @@ extern TextFlags gTextFlags;
 extern u8 gDisableTextPrinters;
 extern struct TextGlyph gCurGlyph;
 
-void DeactivateAllTextPrinters(void);
+WEAK void DeactivateAllTextPrinters(void);
 u16 AddTextPrinterParameterized(u8 windowId, u8 fontId, const u8 *str, u8 x, u8 y, u8 speed, void (*callback)(struct TextPrinterTemplate *, u16));
 bool16 AddTextPrinter(struct TextPrinterTemplate *template, u8 speed, void (*callback)(struct TextPrinterTemplate *, u16));
 void RunTextPrinters(void);

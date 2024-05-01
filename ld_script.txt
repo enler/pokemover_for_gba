@@ -56,9 +56,6 @@ SECTIONS {
 		gflib.a:bg.o(.text.WriteSequenceToBgTilemapBuffer);
 		gflib.a:blit.o(.text.BlitBitmapRect4Bit);
 		gflib.a:blit.o(.text.FillBitmapRect4Bit);
-		gflib.a:braille.o(.text.DecompressGlyph_Braille);
-		gflib.a:braille.o(.text.FontFunc_Braille);
-		gflib.a:braille.o(.text.GetGlyphWidth_Braille);
 		gflib.a:dma3_manager.o(.text.ClearDma3Requests)
 		gflib.a:dma3_manager.o(.text.CheckForSpaceForDma3Request);
 		gflib.a:dma3_manager.o(.text.RequestDma3Copy);
@@ -85,10 +82,6 @@ SECTIONS {
 		gflib.a:malloc.o(.text.PutFirstMemBlockHeader);
 		gflib.a:menu.o(.rodata.sStandardTextBox_WindowTemplates);
 		gflib.a:menu.o(.rodata.sTextSpeedFrameDelays);
-		gflib.a:menu.o(.text.AddTextPrinterForMessage);
-		gflib.a:menu.o(.text.AddTextPrinterParameterized2);
-		gflib.a:menu.o(.text.AddTextPrinterParameterized4);
-		gflib.a:menu.o(.text.AddTextPrinterParameterized5);
 		gflib.a:menu.o(.text.ClearDialogWindowAndFrame);
 		gflib.a:menu.o(.text.ClearScheduledBgCopiesToVram);
 		gflib.a:menu.o(.text.ClearStdWindowAndFrame);
@@ -116,7 +109,6 @@ SECTIONS {
 		gflib.a:menu.o(.text.Menu_ProcessInputNoWrapClearOnChoose);
 		gflib.a:menu.o(.text.PrintMenuTable);
 		gflib.a:menu.o(.text.RedrawMenuCursor);
-		gflib.a:menu.o(.text.RunTextPrintersAndIsPrinter0Active);
 		gflib.a:menu.o(.text.ScheduleBgCopyTilemapToVram);
 		gflib.a:menu.o(.text.WindowFunc_ClearDialogWindowAndFrame)
 		gflib.a:menu.o(.text.WindowFunc_ClearStdWindowAndFrame)
@@ -292,50 +284,6 @@ SECTIONS {
 		gflib.a:task.o(.text.RunTasks);
 		gflib.a:task.o(.text.SetWordTaskArg);
 		gflib.a:task.o(.text.TaskDummy);
-		gflib.a:text.o(.text.AddTextPrinter)
-		gflib.a:text.o(.text.AddTextPrinterParameterized)
-		gflib.a:text.o(.text.ClearTextSpan);
-		gflib.a:text.o(.text.CopyGlyphToWindow);
-		gflib.a:text.o(.text.DeactivateAllTextPrinters)
-		gflib.a:text.o(.text.DecompressGlyphTile);
-		gflib.a:text.o(.text.DecompressGlyph_Narrow);
-		gflib.a:text.o(.text.DecompressGlyph_Normal);
-		gflib.a:text.o(.text.DecompressGlyph_Short);
-		gflib.a:text.o(.text.DecompressGlyph_Small);
-		gflib.a:text.o(.text.DecompressGlyph_SmallNarrow);
-		gflib.a:text.o(.text.DrawKeypadIcon);
-		gflib.a:text.o(.text.FontFunc_Narrow);
-		gflib.a:text.o(.text.FontFunc_Normal);
-		gflib.a:text.o(.text.FontFunc_Short);
-		gflib.a:text.o(.text.FontFunc_ShortCopy1);
-		gflib.a:text.o(.text.FontFunc_ShortCopy2);
-		gflib.a:text.o(.text.FontFunc_ShortCopy3);
-		gflib.a:text.o(.text.FontFunc_Small);
-		gflib.a:text.o(.text.FontFunc_SmallNarrow);
-		gflib.a:text.o(.text.GLYPH_COPY);
-		gflib.a:text.o(.text.GenerateFontHalfRowLookupTable);
-		gflib.a:text.o(.text.GetChineseChar);
-		gflib.a:text.o(.text.GetChineseGlyphswidth);
-		gflib.a:text.o(.text.GetFontAttribute);
-		gflib.a:text.o(.text.GetFontWidthFunc);
-		gflib.a:text.o(.text.GetGlyphWidth_Narrow);
-		gflib.a:text.o(.text.GetGlyphWidth_Normal);
-		gflib.a:text.o(.text.GetGlyphWidth_Short);
-		gflib.a:text.o(.text.GetGlyphWidth_Small);
-		gflib.a:text.o(.text.GetGlyphWidth_SmallNarrow);
-		gflib.a:text.o(.text.GetMenuCursorDimensionByFont)
-		gflib.a:text.o(.text.GetStringWidth);
-		gflib.a:text.o(.text.IsTextPrinterActive)
-		gflib.a:text.o(.text.RenderFont);
-		gflib.a:text.o(.text.RenderText);
-		gflib.a:text.o(.text.RunTextPrinters)
-		gflib.a:text.o(.text.SetDefaultFontsPointer)
-		gflib.a:text.o(.text.TextPrinterClearDownArrow);
-		gflib.a:text.o(.text.TextPrinterDrawDownArrow);
-		gflib.a:text.o(.text.TextPrinterInitDownArrowCounters);
-		gflib.a:text.o(.text.TextPrinterWait);
-		gflib.a:text.o(.text.TextPrinterWaitAutoMode);
-		gflib.a:text.o(.text.TextPrinterWaitWithDownArrow);
 		gflib.a:text_window.o(.text.LoadMessageBoxGfx)
 		gflib.a:text_window.o(.text.LoadUserWindowBorderGfx)
 		gflib.a:text_window.o(.text.LoadWindowGfx)
@@ -358,12 +306,14 @@ SECTIONS {
         *libc.a:libc_a-memcpy.o(.text.memcpy);
         *libc.a:libc_a-memcpy-stub.o(.text.memcpy);
         *libc.a:libc_a-memset.o(.text.memset);
+        *libc.a:libc_a-strlen-stub.o(.text.strlen)
         *libgcc.a:_udivsi3.o(.text);
         *libgcc.a:_umodsi3.o(.text);
         *libgcc.a:_divsi3.o(.text)
         *libgcc.a:_modsi3.o(.text);
         *libgcc.a:_dvmd_tls.o(.text);
         *libgcc.a:_thumb1_case_shi.o(.text);
+        *libgcc.a:_thumb1_case_sqi.o(.text);
         *libgcc.a:_thumb1_case_uqi.o(.text);
         *libgcc.a:_thumb1_case_uhi.o(.text);
     } =0
@@ -382,29 +332,10 @@ SECTIONS {
 		gflib.a:agb_flash_le.o(.rodata.leMaxTime);
 		gflib.a:agb_flash_le.o(.rodata.LE26FV10N1TS);
 		gflib.a:bg.o(.rodata.CSWTCH.75);
-		gflib.a:braille.o(.rodata.sFont_Braille);
-		gflib.a:braille.o(.rodata.sScrollDistances);
 		gflib.a:data.o(.rodata.gMoveNames);
 		gflib.a:data.o(.rodata.gSpeciesNames);
 		gflib.a:data.o(.rodata.gText_BadEgg)
-		gflib.a:fonts.o(.rodata.gFontNarrowLatinGlyphWidths);
-		gflib.a:fonts.o(.rodata.gFontNarrowLatinGlyphs);
-		gflib.a:fonts.o(.rodata.gFontNormalChineseCHSGlyphs);
-		gflib.a:fonts.o(.rodata.gFontNormalChineseGlyphsWidths);
-		gflib.a:fonts.o(.rodata.gFontNormalJapaneseGlyphs);
-		gflib.a:fonts.o(.rodata.gFontNormalLatinGlyphWidths);
-		gflib.a:fonts.o(.rodata.gFontNormalLatinGlyphs);
-		gflib.a:fonts.o(.rodata.gFontShortJapaneseGlyphWidths);
-		gflib.a:fonts.o(.rodata.gFontShortJapaneseGlyphs);
-		gflib.a:fonts.o(.rodata.gFontShortLatinGlyphWidths);
-		gflib.a:fonts.o(.rodata.gFontShortLatinGlyphs);
-		gflib.a:fonts.o(.rodata.gFontSmallChineseCHSGlyphs);
-		gflib.a:fonts.o(.rodata.gFontSmallChineseGlyphsWidths);
-		gflib.a:fonts.o(.rodata.gFontSmallJapaneseGlyphs);
-		gflib.a:fonts.o(.rodata.gFontSmallLatinGlyphWidths);
-		gflib.a:fonts.o(.rodata.gFontSmallLatinGlyphs);
-		gflib.a:fonts.o(.rodata.gFontSmallNarrowLatinGlyphWidths);
-		gflib.a:fonts.o(.rodata.gFontSmallNarrowLatinGlyphs);
+        . = ALIGN(4);
 		gflib.a:graphics.o(.rodata.gMessageBox_Gfx);
 		gflib.a:graphics.o(.rodata.gMessageBox_Pal);
 		gflib.a:graphics.o(.rodata.gMonIconPalettes);
@@ -1383,16 +1314,6 @@ SECTIONS {
 		gflib.a:strings.o(.rodata.gText_SelectorArrow3);
 		gflib.a:strings.o(.rodata.gText_TrainerCardIDNo);
 		gflib.a:strings.o(.rodata.gText_YesNo);
-		gflib.a:text.o(.rodata.sDarkDownArrowTiles);
-		gflib.a:text.o(.rodata.sDownArrowTiles);
-		gflib.a:text.o(.rodata.sDownArrowYCoords);
-		gflib.a:text.o(.rodata.sFontHalfRowOffsets);
-		gflib.a:text.o(.rodata.sFontInfos);
-		gflib.a:text.o(.rodata.sGlyphWidthFuncs);
-		gflib.a:text.o(.rodata.sKeypadIconTiles);
-		gflib.a:text.o(.rodata.sKeypadIcons);
-		gflib.a:text.o(.rodata.sMenuCursorDimensions)
-		gflib.a:text.o(.rodata.sWindowVerticalScrollSpeeds);
 		gflib.a:text_window.o(.rodata.gTextWindowFrame1_Gfx);
 		gflib.a:text_window.o(.rodata.gTextWindowFrame1_Pal);
 		gflib.a:text_window.o(.rodata.sTextWindowFrame10_Gfx);
@@ -1547,16 +1468,6 @@ SECTIONS {
 		gflib.a:string_util.o(.bss.gStringVar4);
 		gflib.a:string_util.o(.bss.sUnknownStringVar);
 		gflib.a:task.o(.bss.gTasks);
-		gflib.a:text.o(.bss.gCurGlyph);
-		gflib.a:text.o(.bss.gDisableTextPrinters);
-		gflib.a:text.o(.bss.gFonts);
-		gflib.a:text.o(.bss.gTextFlags);
-		gflib.a:text.o(.bss.sFontHalfRowLookupTable);
-		gflib.a:text.o(.bss.sLastTextBgColor);
-		gflib.a:text.o(.bss.sLastTextFgColor);
-		gflib.a:text.o(.bss.sLastTextShadowColor);
-		gflib.a:text.o(.bss.sTempTextPrinter);
-		gflib.a:text.o(.bss.sTextPrinters);
 		gflib.a:window.o(.bss.gTransparentTileNumber);
 		gflib.a:window.o(.bss.gWindowBgTilemapBuffers);
 		gflib.a:window.o(.bss.gWindows);

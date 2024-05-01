@@ -34,6 +34,7 @@
 #include "string_util.h"
 #include "strings.h"
 #include "text.h"
+#include "text_ext.h"
 #include "text_window.h"
 #include "trig.h"
 #include "walda_phrase.h"
@@ -1349,7 +1350,7 @@ void DrawTextWindowAndBufferTiles(const u8 *string, void *dst, u8 zero1, u8 zero
         txtColor[0] = zero2;
     txtColor[1] = TEXT_DYNAMIC_COLOR_6;
     txtColor[2] = TEXT_DYNAMIC_COLOR_5;
-    AddTextPrinterParameterized4(windowId, FONT_NORMAL, 0, 1, 0, 0, txtColor, TEXT_SKIP_DRAW, string);
+    DrawText(windowId, string, 0, 1, txtColor, FALSE);
 
     tileBytesToBuffer = bytesToBuffer;
     if (tileBytesToBuffer > 6u)
