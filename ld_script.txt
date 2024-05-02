@@ -185,76 +185,40 @@ SECTIONS {
 		gflib.a:save.o(.text.TryWriteSector);
 		gflib.a:save.o(.text.UpdateSaveAddresses);
 		gflib.a:script_menu.o(.text.ConvertPixelWidthToTileWidth);
-		gflib.a:sprite.o(.rodata.gDummySpriteAffineAnimTable)
-		gflib.a:sprite.o(.rodata.gDummySpriteAnimTable);
 		gflib.a:sprite.o(.text.AddSpriteToOamBuffer);
 		gflib.a:sprite.o(.text.AddSpritesToOamBuffer);
 		gflib.a:sprite.o(.text.AddSubspritesToOamBuffer);
-		gflib.a:sprite.o(.text.AffineAnimCmd_end);
-		gflib.a:sprite.o(.text.AffineAnimCmd_frame);
-		gflib.a:sprite.o(.text.AffineAnimCmd_jump);
-		gflib.a:sprite.o(.text.AffineAnimCmd_loop);
-		gflib.a:sprite.o(.text.AffineAnimDelay);
 		gflib.a:sprite.o(.text.AffineAnimStateReset);
-		gflib.a:sprite.o(.text.AffineAnimStateRestartAnim);
 		gflib.a:sprite.o(.text.AllocOamMatrix);
 		gflib.a:sprite.o(.text.AllocSpriteTiles);
-		gflib.a:sprite.o(.text.AnimCmd_end);
-		gflib.a:sprite.o(.text.AnimCmd_frame);
-		gflib.a:sprite.o(.text.AnimCmd_jump);
-		gflib.a:sprite.o(.text.AnimCmd_loop);
-		gflib.a:sprite.o(.text.AnimateSprite);
-		gflib.a:sprite.o(.text.AnimateSprites);
-		gflib.a:sprite.o(.text.ApplyAffineAnimFrame);
-		gflib.a:sprite.o(.text.ApplyAffineAnimFrameAbsolute);
-		gflib.a:sprite.o(.text.ApplyAffineAnimFrameRelativeAndUpdateMatrix);
-		gflib.a:sprite.o(.text.BeginAffineAnim);
-		gflib.a:sprite.o(.text.BeginAffineAnimLoop);
-		gflib.a:sprite.o(.text.BeginAnim);
-		gflib.a:sprite.o(.text.BeginAnimLoop);
 		gflib.a:sprite.o(.text.BuildOamBuffer);
 		gflib.a:sprite.o(.text.BuildSpritePriorities);
 		gflib.a:sprite.o(.text.CalcCenterToCornerVec);
 		gflib.a:sprite.o(.text.ClearSpriteCopyRequests);
-		gflib.a:sprite.o(.text.ContinueAffineAnim);
-		gflib.a:sprite.o(.text.ContinueAffineAnimLoop);
-		gflib.a:sprite.o(.text.ContinueAnim);
-		gflib.a:sprite.o(.text.ContinueAnimLoop);
 		gflib.a:sprite.o(.text.CopyMatricesToOamBuffer);
-		gflib.a:sprite.o(.text.CopyOamMatrix);
 		gflib.a:sprite.o(.text.CreateSprite);
 		gflib.a:sprite.o(.text.CreateSpriteAt);
-		gflib.a:sprite.o(.text.DecrementAffineAnimDelayCounter);
-		gflib.a:sprite.o(.text.DecrementAnimDelayCounter);
 		gflib.a:sprite.o(.text.DestroySprite);
 		gflib.a:sprite.o(.text.DoLoadSpritePalette);
 		gflib.a:sprite.o(.text.FreeAllSpritePalettes);
 		gflib.a:sprite.o(.text.FreeSpriteTileRanges);
-		gflib.a:sprite.o(.text.GetAffineAnimFrame);
-		gflib.a:sprite.o(.text.GetAnchorCoord);
-		gflib.a:sprite.o(.text.GetSpriteMatrixNum);
 		gflib.a:sprite.o(.text.GetSpriteTileStartByTag);
 		gflib.a:sprite.o(.text.IndexOfSpritePaletteTag);
 		gflib.a:sprite.o(.text.IndexOfSpriteTileTag);
 		gflib.a:sprite.o(.text.InitSpriteAffineAnim);
-		gflib.a:sprite.o(.text.JumpToTopOfAffineAnimLoop);
-		gflib.a:sprite.o(.text.JumpToTopOfAnimLoop);
 		gflib.a:sprite.o(.text.LoadOam);
 		gflib.a:sprite.o(.text.LoadSpritePalette);
 		gflib.a:sprite.o(.text.ProcessSpriteCopyRequests);
-		gflib.a:sprite.o(.text.RequestSpriteFrameImageCopy);
 		gflib.a:sprite.o(.text.ResetAffineAnimData);
 		gflib.a:sprite.o(.text.ResetAllSprites);
 		gflib.a:sprite.o(.text.ResetOamMatrices);
 		gflib.a:sprite.o(.text.ResetOamRange);
 		gflib.a:sprite.o(.text.ResetSprite);
 		gflib.a:sprite.o(.text.ResetSpriteData);
-		gflib.a:sprite.o(.text.SetSpriteOamFlipBits);
 		gflib.a:sprite.o(.text.SetSpriteSheetFrameTileNum);
 		gflib.a:sprite.o(.text.SortSprites);
 		gflib.a:sprite.o(.text.SpriteCallbackDummy);
 		gflib.a:sprite.o(.text.UpdateOamCoords);
-		gflib.a:sprite.o(.text.UpdateSpriteMatrixAnchorPos);
 		gflib.a:string_util.o(.text.ConvertIntToDecimalStringN);
 		gflib.a:string_util.o(.text.ExpandPlaceholder_Aqua);
 		gflib.a:string_util.o(.text.ExpandPlaceholder_Archie);
@@ -1284,16 +1248,13 @@ SECTIONS {
 		gflib.a:pokemon_storage_system.o(.rodata.sWallpapers);
 		gflib.a:save.o(.rodata.sSaveSlotLayout);
 		gflib.a:sprite.o(.rodata.gDummyOamData);
+		gflib.a:sprite.o(.rodata.gDummySpriteAffineAnimTable);
+		gflib.a:sprite.o(.rodata.gDummySpriteAnimTable);
 		gflib.a:sprite.o(.rodata.gDummySpriteTemplate);
-		gflib.a:sprite.o(.rodata.sAffineAnimCmdFuncs);
-		gflib.a:sprite.o(.rodata.sAffineAnimFuncs);
-		gflib.a:sprite.o(.rodata.sAnimCmdFuncs);
-		gflib.a:sprite.o(.rodata.sAnimFuncs);
 		gflib.a:sprite.o(.rodata.sCenterToCornerVecTable);
 		gflib.a:sprite.o(.rodata.sDummyAffineAnim);
 		gflib.a:sprite.o(.rodata.sDummyAnim);
 		gflib.a:sprite.o(.rodata.sOamDimensions);
-		gflib.a:sprite.o(.rodata.sOamDimensions32);
 		gflib.a:string_util.o(.rodata.funcs.1);
 		gflib.a:string_util.o(.rodata.sDigits);
 		gflib.a:string_util.o(.rodata.sPowersOfTen);
@@ -1367,12 +1328,12 @@ SECTIONS {
         src/*.o(.data);
         gflib/*.o(.data);
 		__data_end__ = .;
-		gHeap = .;
-		. = 0x40000;
-		gHeapEnd = .;
     } =0
 
-
+    . = ALIGN(4);
+    gHeap = .;
+	. = 0x2040000;
+	gHeapEnd = .;
 
 	. = 0x3000000;
     bss_start = .;
@@ -1473,6 +1434,18 @@ SECTIONS {
 		gflib.a:window.o(.bss.gWindows);
     }
     bss_end = .;
+
+    . = __data_orig__ + SIZEOF ( .data );
+    . = ALIGN(16);
+    __vram_font_orig__ = .;
+    . = 0x6009800;
+    .vramfont ALIGN(4):
+    AT (__vram_font_orig__)
+    {
+        __vram_font_start__ = .;
+        src/text_ext.o(.vramfont);
+        __vram_font_end__ = .;
+    } =0
 
     /DISCARD/ :
     {

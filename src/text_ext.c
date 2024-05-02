@@ -9,6 +9,7 @@
 static u32 gBppConvTable[256];
 
 static const u8 gCHSFont1bpp[] = INCBIN_U8("graphics/fonts/gba_chs_font_11x11.bin");
+static const u8 gCHSFont1bppExt[] __attribute__((section(".vramfont"))) = INCBIN_U8("graphics/fonts/gba_chs_font_11x11_tail.bin");
 static const u8 gLatinFont1bpp[] = INCBIN_U8("graphics/fonts/gba_latin_font_8x16.bin");
 static const u8 gLatinFont1bppWidthTable[] = INCBIN_U8("graphics/fonts/gba_latin_font_8x16_width_table.bin");
 static const u8 gJPNFont1bpp[] = INCBIN_U8("graphics/fonts/gba_jpn_font_8x16.bin");
@@ -60,7 +61,7 @@ static u8 DrawGlyph(u8 windowId, const u8 *glyph, u8 left, u8 top, u8 width, con
 }
 
 // size of dest must be 32 bytes
-void ConvertNarrowGlyph(const u8 *glyphBuff, u8 *dest) {
+static void ConvertNarrowGlyph(const u8 *glyphBuff, u8 *dest) {
     memset(dest, 0, 32);
     for (int i = 0; i < GLYPH_HEIGHT; i++)
     {
@@ -83,7 +84,7 @@ void ConvertNarrowGlyph(const u8 *glyphBuff, u8 *dest) {
 }
 
 // size of dest must be 64 bytes
-void ConvertWideGlyph(const u8 *source, u8 *dest, int glyphBoxWidth, int glyphBoxHeight, int xOffset)
+static void ConvertWideGlyph(const u8 *source, u8 *dest, int glyphBoxWidth, int glyphBoxHeight, int xOffset)
 {
   int index = 0;
   int remainBitCount = 8;
@@ -166,6 +167,7 @@ static void DrawDownArrowAlt() {
 static bool8 HandleDrawingText() {
     u8 currChar, loChar, width, glyphBuff[64];
     const u8 *glyphPtr;
+    u16 glyphIdx;
 
     switch (sTextDrawingContext.state) {
         case RENDER_STATE_HANDLE_CHAR:
@@ -222,7 +224,11 @@ static bool8 HandleDrawingText() {
                         if (currChar >= 0x1B)
                             currChar--;
                         currChar--;
-                        glyphPtr = &gCHSFont1bpp[(currChar * 0xF7 + loChar) * 16];
+                        glyphIdx = currChar * 0xF7 + loChar;
+                        if (glyphIdx < sizeof(gCHSFont1bpp) / 16)
+                            glyphPtr = &gCHSFont1bpp[glyphIdx *16];
+                        else
+                            glyphPtr = &gCHSFont1bppExt[(glyphIdx - sizeof(gCHSFont1bpp) / 16) * 16];
                         width = glyphPtr[15] & 0xF;
                         ConvertWideGlyph(glyphPtr, glyphBuff, 11, 11, 2);
                         if (width > 8)
@@ -347,7 +353,10 @@ bool8 HandleMessage() {
     HandleDrawingText();
     if (sTextDrawingContext.state == RENDER_STATE_HANDLE_CHAR) {
         CopyWindowToVram(sTextDrawingContext.windowId, COPYWIN_GFX);
-        sTextDrawingContext.delayCounter = sTextDelays[sTextDrawingContext.textSpeed];
+        if (JOY_HELD(A_BUTTON | B_BUTTON)) 
+            sTextDrawingContext.delayCounter = sTextDelays[0];
+        else
+            sTextDrawingContext.delayCounter = sTextDelays[sTextDrawingContext.textSpeed];
     }
     return FALSE;
 }

@@ -22,10 +22,10 @@
 #include "constants/songs.h"
 
 #define DLG_WINDOW_PALETTE_NUM 15
-#define DLG_WINDOW_BASE_TILE_NUM 0x200
+#define DLG_WINDOW_BASE_TILE_NUM 0x0
 #define STD_WINDOW_PALETTE_NUM 14
 #define STD_WINDOW_PALETTE_SIZE PLTT_SIZEOF(10)
-#define STD_WINDOW_BASE_TILE_NUM 0x214
+#define STD_WINDOW_BASE_TILE_NUM 11
 
 struct MenuInfoIcon
 {
@@ -91,7 +91,7 @@ static const struct WindowTemplate sStandardTextBox_WindowTemplates[] =
         .width = 27,
         .height = 4,
         .paletteNum = 15,
-        .baseBlock = 0x194
+        .baseBlock = STD_WINDOW_BASE_TILE_NUM + 9
     },
     DUMMY_WIN_TEMPLATE
 };

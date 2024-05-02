@@ -16,7 +16,6 @@ extern u8 __data_orig__[];
 extern u8 __data_start__[];
 extern u8 __data_end__[];
 
-
 static void VBlankIntr(void);
 static void HBlankIntr(void);
 static void VCountIntr(void);
@@ -72,7 +71,7 @@ void AgbMain()
 
     REG_IME = 1;
     EnableInterrupts(INTR_FLAG_VBLANK);
-    
+
     CheckForFlashMemory();
     Save_ResetSaveCounters();
     LoadGameSave(SAVE_NORMAL);
