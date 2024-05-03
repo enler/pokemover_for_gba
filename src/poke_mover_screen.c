@@ -53,8 +53,13 @@
 #define TILEMAP_BOXVIEW_GAME_TILE_BEGIN (sWindowTemplates[ARRAY_COUNT(sWindowTemplates) - 1].baseBlock + sWindowTemplates[ARRAY_COUNT(sWindowTemplates) - 1].width * sWindowTemplates[ARRAY_COUNT(sWindowTemplates) - 1].height)
 #define TILEMAP_BOXVIEW_LEFT_VIEW_BEGIN (TILEMAP_BOXVIEW_GAME_TILE_BEGIN + 40)
 #define TILEMAP_WALLPAPER_BEGIN (TILEMAP_BOXVIEW_LEFT_VIEW_BEGIN + 100)
-#define TILEMAP_SCROLL_BG_BEGIN (TILEMAP_WALLPAPER_BEGIN + 512)
+#define TILEMAP_SCROLL_BG_BEGIN (TILEMAP_WALLPAPER_BEGIN + 256)
 #define TILEMAP_LEGALITY_VIEW_BEGIN (sWindowTemplate_LegalityViewHint.baseBlock + sWindowTemplate_LegalityViewHint.width * sWindowTemplate_LegalityViewHint.height)
+
+#define BOTTOM_HINT_WIDTH 30
+#define BOTTOM_HINT_HEIGHT 2
+
+#define DecompressAndLoadBgGfxDirectly(src, offset) LZ77UnCompVram(src, (u8*)VRAM + offset * TILE_SIZE_4BPP)
 
 struct Wallpaper
 {
@@ -120,6 +125,7 @@ struct BoxDataSource {
 
 struct ScrollableBoxView
 {
+    u8 ALIGNED(4) bg1Tilemap[256 / 8 * 256 / 8 * 2];
     u8 ALIGNED(4) bg2Tilemap[512 / 8 * 256 / 8 * 2];
     u16 wallpaperTilemap[160 / 8 * 144 / 8];
     u8 state;
@@ -135,7 +141,6 @@ struct ScrollableBoxView
     s8 scrollSpeed;
     u16 gscPlayerNameWinId;
     u16 gscPlayerTrainerIdWinId;
-    u16 bottomHintWinId;
     const struct BoxDataSource *boxDataSource;
 };
 
@@ -171,7 +176,6 @@ struct PokeMoverContext
         struct BoxGSCIntl intl;
     } boxData;
     struct PokeMoverLinkStatus linkStatus;
-    struct MultiBootParam mbParam;
     struct ScrollableBoxView boxView;
     struct ScrollableLegalityView legalityView;
     struct SpriteManager spriteMgr;
@@ -366,8 +370,7 @@ static const u8 gTextInfoA4[] = _("对于宝可梦的昵称以及初训家名，
                                   "将改成跟日语版圆形竞技场的\l"
                                   "时拉比一致。\p");
 
-extern const u8 gMultiBootProgram_GSC_Transfer_Tool_Start[];
-extern const u8 gMultiBootProgram_GSC_Transfer_Tool_End[];
+const u32 gMultiBootProgram_GSC_Transfer_Tool[] = INCBIN_U32("data/mb_GSC_transfer_tool.gba.lz");
 
 static const struct MenuAction sPokeMoverStartMenuItems[] =
 {
@@ -410,7 +413,7 @@ static const struct BgTemplate sBgTemplates[] =
     {
         .bg = 0,
         .charBaseIndex = 0,
-        .mapBaseIndex = 14,
+        .mapBaseIndex = 10,
         .screenSize = 0,
         .paletteMode = 0,
         .priority = 0,
@@ -419,7 +422,7 @@ static const struct BgTemplate sBgTemplates[] =
     {
         .bg = 1,
         .charBaseIndex = 0,
-        .mapBaseIndex = 15,
+        .mapBaseIndex = 11,
         .screenSize = 0,
         .paletteMode = 0,
         .priority = 1,
@@ -428,7 +431,7 @@ static const struct BgTemplate sBgTemplates[] =
     {
         .bg = 2,
         .charBaseIndex = 0,
-        .mapBaseIndex = 16,
+        .mapBaseIndex = 12,
         .screenSize = 1,
         .paletteMode = 0,
         .priority = 2,
@@ -437,7 +440,7 @@ static const struct BgTemplate sBgTemplates[] =
     {
         .bg = 3,
         .charBaseIndex = 0,
-        .mapBaseIndex = 18,
+        .mapBaseIndex = 14,
         .screenSize = 0,
         .paletteMode = 0,
         .priority = 3,
@@ -797,9 +800,8 @@ static bool8 InitBGs(struct Task * task)
             task->tSubState++;
             break;
         case 1:
-            SetGpuReg(REG_OFFSET_BG3CNT, BGCNT_PRIORITY(3) | BGCNT_CHARBASE(3) | BGCNT_16COLOR | BGCNT_SCREENBASE(31));
-            DecompressAndLoadBgGfxUsingHeap(3, sScrollingBg_Gfx, 0, TILEMAP_SCROLL_BG_BEGIN, 0);
-            LZ77UnCompVram(sScrollingBg_Tilemap, (void *)BG_SCREEN_ADDR(18));
+            DecompressAndLoadBgGfxDirectly(sScrollingBg_Gfx, TILEMAP_SCROLL_BG_BEGIN);
+            LZ77UnCompVram(sScrollingBg_Tilemap, (void *)BG_SCREEN_ADDR(14));
             LoadPalette(sScrollingBg_Pal, BG_PLTT_ID(3), 32);
             task->tSubState++;
             break;
@@ -820,10 +822,12 @@ static bool8 InitScrollableBoxView() {
     switch (sPokeMoverContext->boxView.state)
     {
     case 0:
+        CpuFastFill(0, sPokeMoverContext->boxView.bg1Tilemap, sizeof(sPokeMoverContext->boxView.bg1Tilemap));
         CpuFastFill(0, sPokeMoverContext->boxView.bg2Tilemap, sizeof(sPokeMoverContext->boxView.bg2Tilemap));
         sPokeMoverContext->boxView.state++;
         break;
     case 1:
+        SetBgTilemapBuffer(1, sPokeMoverContext->boxView.bg1Tilemap);
         SetBgTilemapBuffer(2, sPokeMoverContext->boxView.bg2Tilemap);
         sPokeMoverContext->boxView.state++;
         break;
@@ -856,7 +860,6 @@ static void InitTextView() {
 
     DrawStandardTextBox();
 
-    sPokeMoverContext->boxView.bottomHintWinId = AddWindow(&sWindowTemplates[0]);
     sPokeMoverContext->boxView.gscPlayerNameWinId = AddWindow(&sWindowTemplates[1]);
     sPokeMoverContext->boxView.gscPlayerTrainerIdWinId = AddWindow(&sWindowTemplates[2]);
 }
@@ -1080,7 +1083,7 @@ static bool8 DrawBoxWallpaper(int direction) {
     switch (sPokeMoverContext->boxView.state)
     {
         case 0:
-            DecompressAndCopyTileDataToVram(2, wallpaper->tiles, 0, TILEMAP_WALLPAPER_BEGIN + sPokeMoverContext->boxView.slot * 256, 0);
+            DecompressAndCopyTileDataToVram(2, wallpaper->tiles, 0, TILEMAP_WALLPAPER_BEGIN + sPokeMoverContext->boxView.slot * 128, 0);
             sPokeMoverContext->boxView.state++;
             break;
         case 1:
@@ -1102,7 +1105,7 @@ static bool8 DrawBoxWallpaper(int direction) {
             break;
         case 3:
             LZ77UnCompWram(wallpaper->tilemap, sPokeMoverContext->boxView.wallpaperTilemap);
-            CopyRectToBgTilemapBufferRect(2, sPokeMoverContext->boxView.wallpaperTilemap, 0, 0, 20, 18, tilemapLeft, 0, 20, 18, 17, TILEMAP_WALLPAPER_BEGIN + sPokeMoverContext->boxView.slot * 256, 3 + sPokeMoverContext->boxView.slot * 2);
+            CopyRectToBgTilemapBufferRect(2, sPokeMoverContext->boxView.wallpaperTilemap, 0, 0, 20, 18, tilemapLeft, 0, 20, 18, 17, TILEMAP_WALLPAPER_BEGIN + sPokeMoverContext->boxView.slot * 128, 3 + sPokeMoverContext->boxView.slot * 2);
             if (direction == 1) {
                 FillBgTilemapBufferRect(2, 0, tilemapLeft + 20, 0, 4, 0x12, 17);
             }
@@ -1233,13 +1236,13 @@ static bool8 DrawLeftViewOfBox(struct Task *task) {
     case 0:
         if (sPokeMoverContext->baseData.gameVer == VERSION_GOLD || sPokeMoverContext->baseData.gameVer == VERSION_SILVER)
         {
-            DecompressAndLoadBgGfxUsingHeap(1, boxViewGBSkin_Gfx, 0, TILEMAP_BOXVIEW_LEFT_VIEW_BEGIN, 0);
+            DecompressAndLoadBgGfxDirectly(boxViewGBSkin_Gfx, TILEMAP_BOXVIEW_LEFT_VIEW_BEGIN);
             CopyRectToBgTilemapBufferRect(1, boxViewGBSkin_Tilemap, 0, 0, 10, 14, 0, 4, 10, 14, 17, TILEMAP_BOXVIEW_LEFT_VIEW_BEGIN, 9);
             LoadPalette(boxViewGBSkin_Pal, BG_PLTT_ID(9), 32 * 4);
         }
         else
         {
-            DecompressAndLoadBgGfxUsingHeap(1, boxViewGBCSkin_Gfx, 0, TILEMAP_BOXVIEW_LEFT_VIEW_BEGIN, 0);
+            DecompressAndLoadBgGfxDirectly(boxViewGBCSkin_Gfx, TILEMAP_BOXVIEW_LEFT_VIEW_BEGIN);
             CopyRectToBgTilemapBufferRect(1, boxViewGBCSkin_Tilemap, 0, 0, 10, 14, 0, 4, 10, 14, 17, TILEMAP_BOXVIEW_LEFT_VIEW_BEGIN, 9);
             LoadPalette(boxViewGBCSkin_Pal, BG_PLTT_ID(9), 32 * 4);
         }
@@ -1250,7 +1253,7 @@ static bool8 DrawLeftViewOfBox(struct Task *task) {
             task->tBoxState++;
         break;
     case 2:
-        DecompressAndLoadBgGfxUsingHeap(1, boxViewPokeTitleImages[sPokeMoverContext->baseData.gameVer - 1][0], 0, TILEMAP_BOXVIEW_GAME_TILE_BEGIN, 0);
+        DecompressAndLoadBgGfxDirectly(boxViewPokeTitleImages[sPokeMoverContext->baseData.gameVer - 1][0], TILEMAP_BOXVIEW_GAME_TILE_BEGIN);
         CopyRectToBgTilemapBufferRect(1, boxViewPokeTitleImages[sPokeMoverContext->baseData.gameVer - 1][1], 0, 0, 10, 4, 0, 0, 10, 4, 17, TILEMAP_BOXVIEW_GAME_TILE_BEGIN, 1);
         LoadPalette(boxViewPokeTitleImages[sPokeMoverContext->baseData.gameVer - 1][2], BG_PLTT_ID(1), 32 * 2);
         task->tBoxState++;
@@ -1378,22 +1381,34 @@ static bool8 DoScrollLegalityView()
 
 static bool8 HandleSendingTransferToolToGBA(struct Task * task) {
     bool8 result = FALSE;
+    u32 size;
+    u8 * ptr;
     switch (task->tSubState) {
         case 0:
-            if (multiboot_normal(gMultiBootProgram_GSC_Transfer_Tool_Start, gMultiBootProgram_GSC_Transfer_Tool_End) == MB_SUCCESS)
+            ptr = (u8*)malloc_and_decompress(gMultiBootProgram_GSC_Transfer_Tool, &size);
+            SetWordTaskArg(0, 4, (u32)ptr);
+            SetWordTaskArg(0, 6, size);
+            task->tSubState++;
+            break;
+        case 1:
+            ptr = (u8*)GetWordTaskArg(0, 4);
+            size = GetWordTaskArg(0, 6);
+            if (multiboot_normal(ptr, ptr + size) == MB_SUCCESS)
                 task->tSubState++;
             else
                 task->tSubState += 2;
             break;
-        case 1:
-            DrawDelayedMessage(0, gTextSendSuccessfully, 180);
-            task->tSubState = 3;
-            break;
         case 2:
-            DrawDelayedMessage(0, gTextSendUnsuccessfully, 180);
-            task->tSubState = 3;
+            DrawDelayedMessage(0, gTextSendSuccessfully, 180);
+            task->tSubState = 4;
             break;
         case 3:
+            DrawDelayedMessage(0, gTextSendUnsuccessfully, 180);
+            task->tSubState = 4;
+            break;
+        case 4:
+            ptr = (u8*)GetWordTaskArg(0, 4);
+            FREE_AND_SET_NULL(ptr);
             if (HandleDelayedMessage(A_BUTTON | B_BUTTON))
                 result = TRUE;
             break;
@@ -1448,7 +1463,7 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         if (sPokeMoverContext->linkStatus.status == STATE_IDLE) {
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
             DrawMessage(gMsgUsageStep3OfSendingTransferToolOverExploit, 2);
-            DecompressAndLoadBgGfxUsingHeap(0, crystalExploitTotorial_Gfx, 0, TILEMAP_COMMON_BEGIN, 0);
+            DecompressAndLoadBgGfxDirectly(crystalExploitTotorial_Gfx, TILEMAP_COMMON_BEGIN);
             LoadPalette(crystalExploitTotorial_Pal, BG_PLTT_ID(8), 32);
             task->tSubState++;
         }
@@ -1594,6 +1609,7 @@ static s32 HandleScrollableBoxView(struct Task * task){
 static int HandleLegalityView(struct Task * task) {
     s32 i = 0;
     u8 tilemapTop;
+    u16 tilemap[BOTTOM_HINT_WIDTH * BOTTOM_HINT_HEIGHT];
     switch (task->tLegalityViewState)
     {
         case 0:
@@ -1601,9 +1617,10 @@ static int HandleLegalityView(struct Task * task) {
             for (i = 0; i < ARRAY_COUNT(sPokeMoverContext->legalityView.windowIds); i++) {
                 sPokeMoverContext->legalityView.windowIds[i] = AddWindow(&sWindowTemplates_LegalityView[i]);
             }
-            task->tWindowId = AddWindow(&sWindowTemplate_LegalityViewHint);
-            PutWindowTilemap(task->tWindowId);
-            DecompressAndLoadBgGfxUsingHeap(sWindowTemplate_LegalityViewHint.bg, boxViewBottomBar2_Gfx, 0, sWindowTemplate_LegalityViewHint.baseBlock, 0);
+            for (i = 0; i < ARRAY_COUNT(tilemap); i++)
+                tilemap[i] = (u16)i;
+            DecompressAndLoadBgGfxDirectly(boxViewBottomBar2_Gfx, sWindowTemplate_LegalityViewHint.baseBlock);
+            CopyRectToBgTilemapBufferRect(0, tilemap, 0, 0, BOTTOM_HINT_WIDTH, BOTTOM_HINT_HEIGHT, sWindowTemplate_LegalityViewHint.tilemapLeft, sWindowTemplate_LegalityViewHint.tilemapTop, BOTTOM_HINT_WIDTH, BOTTOM_HINT_HEIGHT, 17, TILEMAP_COMMON_BEGIN, sWindowTemplate_LegalityViewHint.paletteNum);
             LoadPalette(boxViewBottomBar2_Pal, PLTT_ID(sWindowTemplate_LegalityViewHint.paletteNum), 32);
             SetGpuReg(REG_OFFSET_BG2VOFS, 0);
             SetGpuReg(REG_OFFSET_BG2HOFS, 0);
@@ -1655,8 +1672,14 @@ static int HandleLegalityView(struct Task * task) {
                 for (i = 0; i < sizeof(sPokeMoverContext->legalityView.windowIds); i++) {
                     RemoveWindow(sPokeMoverContext->legalityView.windowIds[i]);
                 }
-                ClearWindowTilemap(task->tWindowId);
-                RemoveWindow(task->tWindowId);
+                FillBgTilemapBufferRect(
+                    sWindowTemplate_LegalityViewHint.bg,
+                    0,
+                    sWindowTemplate_LegalityViewHint.tilemapLeft,
+                    sWindowTemplate_LegalityViewHint.tilemapTop,
+                    sWindowTemplate_LegalityViewHint.width,
+                    sWindowTemplate_LegalityViewHint.height,
+                    sWindowTemplate_LegalityViewHint.paletteNum);
                 CpuFastFill(0, sPokeMoverContext->boxView.bg2Tilemap, sizeof(sPokeMoverContext->boxView.bg2Tilemap));
                 task->tLegalityViewState = JOY_NEW(A_BUTTON) ? 14 : 15;
             }
@@ -1822,6 +1845,7 @@ static int HandleRecvingView(struct Task *task) {
     u8 tempBuff[32];
     const void *ptr;
     struct BoxMonGSCBase *bases;
+    u16 tilemap[BOTTOM_HINT_WIDTH * BOTTOM_HINT_HEIGHT];
     switch (task->tSubState)
     {
         case 0:
@@ -1874,10 +1898,12 @@ static int HandleRecvingView(struct Task *task) {
         case 7:
         case 15:
             ptr = task->tSubState == 7 ? boxViewBottomBar0_Gfx : boxViewBottomBar1_Gfx;
-            DecompressAndLoadBgGfxUsingHeap(gWindows[sPokeMoverContext->boxView.bottomHintWinId].window.bg, ptr, 0, gWindows[sPokeMoverContext->boxView.bottomHintWinId].window.baseBlock, 0);
-            PutWindowTilemap(sPokeMoverContext->boxView.bottomHintWinId);
+            DecompressAndLoadBgGfxDirectly(ptr, sWindowTemplates[0].baseBlock);
+            for (i = 0; i < ARRAY_COUNT(tilemap); i++)
+                tilemap[i] = (u16)i;
+            CopyRectToBgTilemapBufferRect(1, tilemap, 0, 0, BOTTOM_HINT_WIDTH, BOTTOM_HINT_HEIGHT, sWindowTemplates[0].tilemapLeft, sWindowTemplates[0].tilemapTop, BOTTOM_HINT_WIDTH, BOTTOM_HINT_HEIGHT, 17, sWindowTemplates[0].baseBlock, sWindowTemplates[0].paletteNum);
             ptr = task->tSubState == 7 ? boxViewBottomBar0_Pal : boxViewBottomBar1_Pal;
-            LoadPalette(ptr, BG_PLTT_ID(gWindows[sPokeMoverContext->boxView.bottomHintWinId].window.paletteNum), 32);
+            LoadPalette(ptr, BG_PLTT_ID(sWindowTemplates[0].paletteNum), 32);
             task->tSubState++;
             break;
         case 8:
@@ -2238,7 +2264,6 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
         case 5:
             if (!gPaletteFade.active && HandleMessage())
             {
-                memset(&sPokeMoverContext->mbParam, 0, sizeof(sPokeMoverContext->mbParam));
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
                 DrawText(0, gTextSending, 0, 0, NULL, TRUE);
                 task->tState++;

@@ -364,15 +364,15 @@ bool8 HandleMessage() {
 s32 GetStringWidth(u8 fontId, const u8 *str, s16 letterSpacing) {
     bool8 isJapanese;
     u32 lineWidth;
-    const u8 *bufferPointer;
+    const u8 *glyphPtr;
     int glyphWidth;
     s32 width;
+    u32 glyphIdx;
 
     isJapanese = 0;
 
     width = 0;
     lineWidth = 0;
-    bufferPointer = 0;
 
     while (*str != EOS)
     {
@@ -406,7 +406,12 @@ s32 GetStringWidth(u8 fontId, const u8 *str, s16 letterSpacing) {
             if (!isJapanese) {
                 if (str[1] >= 0x00 && str[1] <= 0xF6)
                 {
-                    glyphWidth = gCHSFont1bpp[(str[0] * 0xF7 + str[1]) * 16 + 15] & 0x0F;
+                    glyphIdx = str[0] * 0xF7 + str[1];
+                    if (glyphIdx < sizeof(gCHSFont1bpp) / 16)
+                        glyphPtr = &gCHSFont1bpp[glyphIdx * 16];
+                    else
+                        glyphPtr = &gCHSFont1bppExt[(glyphIdx - sizeof(gCHSFont1bpp) / 16) * 16];
+                    glyphWidth = glyphPtr[15] & 0xF;
                     lineWidth += glyphWidth;
                     str++;
                     break;

@@ -5,6 +5,7 @@ SECTIONS {
     {
         src/crt0.o(.text);
         src/*.o(.text);
+        __flash_text_start__ = .;
 		gflib.a:agb_flash.o(.text.FlashTimerIntr);
 		gflib.a:agb_flash.o(.text.ProgramFlashSectorAndVerify);
 		gflib.a:agb_flash.o(.text.ReadFlash_Core);
@@ -20,6 +21,8 @@ SECTIONS {
 		gflib.a:agb_flash.o(.text.VerifyFlashSector);
 		gflib.a:agb_flash_1m.o(.text.*);
 		gflib.a:agb_flash_mx.o(.text.*);
+        __flash_text_end__ = .;
+        __bg_text_start__ = .;
 		gflib.a:bg.o(.text.BgTileAllocOp);
 		gflib.a:bg.o(.text.ChangeBgX);
 		gflib.a:bg.o(.text.ChangeBgY);
@@ -54,13 +57,21 @@ SECTIONS {
 		gflib.a:bg.o(.text.ShowBgInternal);
 		gflib.a:bg.o(.text.SyncBgVisibilityAndMode);
 		gflib.a:bg.o(.text.WriteSequenceToBgTilemapBuffer);
+        __bg_text_end__ = .;
+        __blit_text_start__ = .;
 		gflib.a:blit.o(.text.BlitBitmapRect4Bit);
 		gflib.a:blit.o(.text.FillBitmapRect4Bit);
+        __blit_text_end__ = .;
+        __dma3_text_start__ = .;
 		gflib.a:dma3_manager.o(.text.ClearDma3Requests)
 		gflib.a:dma3_manager.o(.text.CheckForSpaceForDma3Request);
 		gflib.a:dma3_manager.o(.text.RequestDma3Copy);
 		gflib.a:dma3_manager.o(.text.ProcessDma3Requests)
+        __dma3_text_end__ = .;
+        __dynamic_placeholder_text_util_text_start__ = .;
 		gflib.a:dynamic_placeholder_text_util.o(.text.DynamicPlaceholderTextUtil_GetPlaceholderPtr);
+        __dynamic_placeholder_text_util_text_end__ = .;
+        __gpu_regs_text_start__ = .;
 		gflib.a:gpu_regs.o(.text.CopyBufferedValuesToGpuRegs);
 		gflib.a:gpu_regs.o(.text.CopyBufferedValueToGpuReg);
 		gflib.a:gpu_regs.o(.text.DisableInterrupts)
@@ -70,8 +81,14 @@ SECTIONS {
 		gflib.a:gpu_regs.o(.text.SetGpuReg);
 		gflib.a:gpu_regs.o(.text.SyncRegIE);
 		gflib.a:gpu_regs.o(.text.UpdateRegDispstatIntrBits);
+        __gpu_regs_text_end__ = .;
+        __international_string_util_text_start__ = .;
 		gflib.a:international_string_util.o(.text.GetMaxWidthInMenuTable)
+        __international_string_util_text_end__ = .;
+        __load_save_text_start__ = .;
 		gflib.a:load_save.o(.text.CheckForFlashMemory)
+        __load_save_text_end__ = .;
+        __malloc_text_start__ = .;
 		gflib.a:malloc.o(.text.Alloc);
 		gflib.a:malloc.o(.text.AllocInternal);
 		gflib.a:malloc.o(.text.AllocZeroed);
@@ -80,6 +97,8 @@ SECTIONS {
 		gflib.a:malloc.o(.text.FreeInternal);
 		gflib.a:malloc.o(.text.InitHeap);
 		gflib.a:malloc.o(.text.PutFirstMemBlockHeader);
+        __malloc_text_end__ = .;
+        __menu_text_start__ = .;
 		gflib.a:menu.o(.rodata.sStandardTextBox_WindowTemplates);
 		gflib.a:menu.o(.rodata.sTextSpeedFrameDelays);
 		gflib.a:menu.o(.text.ClearDialogWindowAndFrame);
@@ -119,11 +138,17 @@ SECTIONS {
 		gflib.a:menu.o(.text.copy_decompressed_tile_data_to_vram)
 		gflib.a:menu.o(.text.malloc_and_decompress)
 		gflib.a:menu.o(.text.task_free_buf_after_copying_tile_data_to_vram)
+        __menu_text_end__ = .;
+        __menu_helpers_text_start__ = .;
 		gflib.a:menu_helpers.o(.text.ResetAllBgsCoordinates);
 		gflib.a:menu_helpers.o(.text.ResetVramOamAndBgCntRegs);
 		gflib.a:menu_helpers.o(.text.SetVBlankHBlankCallbacksToNull);
+        __menu_helpers_text_end__ = .;
+        __overworld_text_start__ = .;
 		gflib.a:overworld.o(.text.GetCurrentRegionMapSectionId)
 		gflib.a:overworld.o(.text.Overworld_GetMapHeaderByGroupAndId)
+        __overworld_text_end__ = .;
+        __palette_text_start__ = .;
 		gflib.a:palette.o(.text.BeginNormalPaletteFade)
 		gflib.a:palette.o(.text.BlendPalettes)
 		gflib.a:palette.o(.text.IsSoftwarePaletteFadeFinishing)
@@ -137,7 +162,11 @@ SECTIONS {
 		gflib.a:palette.o(.text.UpdateHardwarePaletteFade);
 		gflib.a:palette.o(.text.UpdateNormalPaletteFade);
 		gflib.a:palette.o(.text.UpdatePaletteFade)
+        __palette_text_end__ = .;
+        __pokedex_text_start__ = .;
 		gflib.a:pokedex.o(.text.GetSetPokedexFlag);
+        __pokedex_text_end__ = .;
+        __pokemon_text_start__ = .;
 		gflib.a:pokemon.o(.text.BoxMonRestorePP);
 		gflib.a:pokemon.o(.text.CalculateBoxMonChecksum);
 		gflib.a:pokemon.o(.text.CalculatePPWithBonus);
@@ -156,15 +185,23 @@ SECTIONS {
 		gflib.a:pokemon.o(.text.SetBoxMonData);
 		gflib.a:pokemon.o(.text.SpeciesToNationalPokedexNum);
 		gflib.a:pokemon.o(.text.ZeroBoxMonData);
+        __pokemon_text_end__ = .;
+        __pokemon_icon_text_start__ = .;
 		gflib.a:pokemon_icon.o(.rodata.gMonIconPaletteIndices);
 		gflib.a:pokemon_icon.o(.text.GetIconSpecies);
 		gflib.a:pokemon_icon.o(.text.GetMonIconTiles);
 		gflib.a:pokemon_icon.o(.text.GetUnownLetterByPersonality);
 		gflib.a:pokemon_icon.o(.text.LoadMonIconPalettes);
+        __pokemon_icon_text_end__ = .;
+        __pokemon_storage_system_text_start__ = .;
 		gflib.a:pokemon_storage_system.o(.text.DrawTextWindowAndBufferTiles);
 		gflib.a:pokemon_storage_system.o(.text.GetWaldaWallpaperPatternId);
 		gflib.a:pokemon_storage_system.o(.text.ZeroBoxMonAt);
+        __pokemon_storage_system_text_end__ = .;
+        __random_text_start__ = .;
 		gflib.a:random.o(.text.Random)
+        __random_text_end__ = .;
+        __save_text_start__ = .;
 		gflib.a:save.o(.text.CalculateChecksum);
 		gflib.a:save.o(.text.CopySaveSlotData);
 		gflib.a:save.o(.text.CopySectorSignatureByte);
@@ -184,7 +221,11 @@ SECTIONS {
 		gflib.a:save.o(.text.SetDamagedSectorBits);
 		gflib.a:save.o(.text.TryWriteSector);
 		gflib.a:save.o(.text.UpdateSaveAddresses);
+        __save_text_end__ = .;
+        __script_menu_text_start__ = .;
 		gflib.a:script_menu.o(.text.ConvertPixelWidthToTileWidth);
+        __script_menu_text_end__ = .;
+        __sprite_text_start__ = .;
 		gflib.a:sprite.o(.text.AddSpriteToOamBuffer);
 		gflib.a:sprite.o(.text.AddSpritesToOamBuffer);
 		gflib.a:sprite.o(.text.AddSubspritesToOamBuffer);
@@ -219,6 +260,8 @@ SECTIONS {
 		gflib.a:sprite.o(.text.SortSprites);
 		gflib.a:sprite.o(.text.SpriteCallbackDummy);
 		gflib.a:sprite.o(.text.UpdateOamCoords);
+        __sprite_text_end__ = .;
+        __string_util_text_start__ = .;
 		gflib.a:string_util.o(.text.ConvertIntToDecimalStringN);
 		gflib.a:string_util.o(.text.ExpandPlaceholder_Aqua);
 		gflib.a:string_util.o(.text.ExpandPlaceholder_Archie);
@@ -239,6 +282,8 @@ SECTIONS {
 		gflib.a:string_util.o(.text.StringCopyN);
 		gflib.a:string_util.o(.text.StringExpandPlaceholders);
 		gflib.a:string_util.o(.text.StringLength)
+        __string_util_text_end__ = .;
+        __task_text_start__ = .;
 		gflib.a:task.o(.text.CreateTask);
 		gflib.a:task.o(.text.DestroyTask);
 		gflib.a:task.o(.text.FindFirstActiveTask);
@@ -248,10 +293,16 @@ SECTIONS {
 		gflib.a:task.o(.text.RunTasks);
 		gflib.a:task.o(.text.SetWordTaskArg);
 		gflib.a:task.o(.text.TaskDummy);
+        __task_text_end__ = .;
+        __text_window_text_start__ = .;
 		gflib.a:text_window.o(.text.LoadMessageBoxGfx)
 		gflib.a:text_window.o(.text.LoadUserWindowBorderGfx)
 		gflib.a:text_window.o(.text.LoadWindowGfx)
+        __text_window_text_end__ = .;
+        __util_text_start__ = .;
 		gflib.a:util.o(.text.BlendPalette);
+        __util_text_end__ = .;
+        __window_text_start__ = .;
 		gflib.a:window.o(.text.AddWindow);
 		gflib.a:window.o(.text.BlitBitmapRectToWindow);
 		gflib.a:window.o(.text.CallWindowFunction)
@@ -267,6 +318,7 @@ SECTIONS {
 		gflib.a:window.o(.text.PutWindowTilemap);
 		gflib.a:window.o(.text.RemoveWindow);
 		gflib.a:window.o(.text.ScrollWindow);
+        __window_text_end__ = .;
         *libc.a:libc_a-memcpy.o(.text.memcpy);
         *libc.a:libc_a-memcpy-stub.o(.text.memcpy);
         *libc.a:libc_a-memset.o(.text.memset);
@@ -285,9 +337,12 @@ SECTIONS {
     .rodata :
     ALIGN(4)
     {
+        __src_rodata_start__ = .;
         src/*.o(.rodata*);
         data/*.o(.rodata);
+        __src_rodata_end__ = .;
 		. = ALIGN(4);
+        __flash_rodata_start__ = .;
 		gflib.a:agb_flash_1m.o(.rodata.AgbLibFlashVersion);
 		gflib.a:agb_flash_1m.o(.rodata.sSetupInfos);
 		gflib.a:agb_flash_mx.o(.rodata.mxMaxTime);
@@ -295,11 +350,17 @@ SECTIONS {
 		gflib.a:agb_flash_mx.o(.rodata.DefaultFlash);
 		gflib.a:agb_flash_le.o(.rodata.leMaxTime);
 		gflib.a:agb_flash_le.o(.rodata.LE26FV10N1TS);
+        __flash_rodata_end__ = .;
+        __bg_rodata_start__ = .;
 		gflib.a:bg.o(.rodata.CSWTCH.75);
+        __bg_rodata_end__ = .;
+        __data_rodata_start__ = .;
 		gflib.a:data.o(.rodata.gMoveNames);
 		gflib.a:data.o(.rodata.gSpeciesNames);
 		gflib.a:data.o(.rodata.gText_BadEgg)
+        __data_rodata_end__ = .;
         . = ALIGN(4);
+        __graphics_rodata_start__ = .;
 		gflib.a:graphics.o(.rodata.gMessageBox_Gfx);
 		gflib.a:graphics.o(.rodata.gMessageBox_Pal);
 		gflib.a:graphics.o(.rodata.gMonIconPalettes);
@@ -723,8 +784,12 @@ SECTIONS {
 		gflib.a:graphics.o(.rodata.gWallpaperTilemap_Horizontal);
 		gflib.a:graphics.o(.rodata.gWallpaperTilemap_Ribbon);
 		gflib.a:graphics.o(.rodata.gWallpaperTiles_Horizontal);
-		gflib.a:graphics.o(.rodata.gWallpaperTiles_Ribbon);		
+		gflib.a:graphics.o(.rodata.gWallpaperTiles_Ribbon);
+        __graphics_rodata_end__ = .;
+        __palette_rodata_start__ = .;
 		gflib.a:palette.o(.rodata.sDummyPaletteStructTemplate);
+        __palette_rodata_end__ = .;
+        __pokemon_rodata_start__ = .;
 		gflib.a:pokemon.o(.rodata.gBattleMoves);
 		gflib.a:pokemon.o(.rodata.gExperienceTables);
 		gflib.a:pokemon.o(.rodata.gLevelUpLearnsets);
@@ -1142,8 +1207,12 @@ SECTIONS {
 		gflib.a:pokemon.o(.rodata.sZapdosLevelUpLearnset);
 		gflib.a:pokemon.o(.rodata.sZigzagoonLevelUpLearnset);
 		gflib.a:pokemon.o(.rodata.sZubatLevelUpLearnset);
+        __pokemon_rodata_end__ = .;
+        __pokemon_icon_rodata_start__ = .;
 		gflib.a:pokemon_icon.o(.rodata.gMonIconPaletteTable);
 		gflib.a:pokemon_icon.o(.rodata.gMonIconTable);
+        __pokemon_icon_rodata_end__ = .;
+        __pokemon_storage_system_rodata_start__ = .;
 		gflib.a:pokemon_storage_system.o(.rodata.sAnim_BoxTitle_Left);
 		gflib.a:pokemon_storage_system.o(.rodata.sAnim_BoxTitle_Right);
 		gflib.a:pokemon_storage_system.o(.rodata.sAnims_BoxTitle);
@@ -1246,7 +1315,11 @@ SECTIONS {
 		gflib.a:pokemon_storage_system.o(.rodata.sWallpaperTiles_Whiscash);
 		gflib.a:pokemon_storage_system.o(.rodata.sWallpaperTiles_Zigzagoon);
 		gflib.a:pokemon_storage_system.o(.rodata.sWallpapers);
+        __pokemon_storage_system_rodata_end__ = .;
+        __save_rodata_start__ = .;
 		gflib.a:save.o(.rodata.sSaveSlotLayout);
+        __save_rodata_end__ = .;
+        __sprite_rodata_start__ = .;
 		gflib.a:sprite.o(.rodata.gDummyOamData);
 		gflib.a:sprite.o(.rodata.gDummySpriteAffineAnimTable);
 		gflib.a:sprite.o(.rodata.gDummySpriteAnimTable);
@@ -1255,9 +1328,13 @@ SECTIONS {
 		gflib.a:sprite.o(.rodata.sDummyAffineAnim);
 		gflib.a:sprite.o(.rodata.sDummyAnim);
 		gflib.a:sprite.o(.rodata.sOamDimensions);
+        __sprite_rodata_end__ = .;
+        __string_util_rodata_start__ = .;
 		gflib.a:string_util.o(.rodata.funcs.1);
 		gflib.a:string_util.o(.rodata.sDigits);
 		gflib.a:string_util.o(.rodata.sPowersOfTen);
+        __string_util_rodata_end__ = .;
+        __strings_rodata_start__ = .;
 		gflib.a:strings.o(.rodata.gText_Box);
 		gflib.a:strings.o(.rodata.gText_EggNickname);
 		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Aqua);
@@ -1275,6 +1352,8 @@ SECTIONS {
 		gflib.a:strings.o(.rodata.gText_SelectorArrow3);
 		gflib.a:strings.o(.rodata.gText_TrainerCardIDNo);
 		gflib.a:strings.o(.rodata.gText_YesNo);
+        __strings_rodata_end__ = .;
+        __text_window_rodata_start__ = .;
 		gflib.a:text_window.o(.rodata.gTextWindowFrame1_Gfx);
 		gflib.a:text_window.o(.rodata.gTextWindowFrame1_Pal);
 		gflib.a:text_window.o(.rodata.sTextWindowFrame10_Gfx);
@@ -1316,7 +1395,10 @@ SECTIONS {
 		gflib.a:text_window.o(.rodata.sTextWindowFrame9_Gfx);
 		gflib.a:text_window.o(.rodata.sTextWindowFrame9_Pal);
 		gflib.a:text_window.o(.rodata.sWindowFrames);
+        __text_window_rodata_end__ = .;
+        __util_rodata_start__ = .;
 		gflib.a:util.o(.rodata.gBitTable);
+        __util_rodata_end__ = .;
     } =0
 
 	__data_orig__ = .;
@@ -1438,7 +1520,7 @@ SECTIONS {
     . = __data_orig__ + SIZEOF ( .data );
     . = ALIGN(16);
     __vram_font_orig__ = .;
-    . = 0x6009800;
+    . = 0x6007800;
     .vramfont ALIGN(4):
     AT (__vram_font_orig__)
     {
@@ -1447,6 +1529,48 @@ SECTIONS {
         __vram_font_end__ = .;
     } =0
 
+    __flash_text_size__ = __flash_text_end__ - __flash_text_start__;
+    __bg_text_size__ = __bg_text_end__ - __bg_text_start__;
+    __blit_text_size__ = __blit_text_end__ - __blit_text_start__;
+    __dma3_text_size__ = __dma3_text_end__ - __dma3_text_start__;
+    __dynamic_placeholder_text_util_text_size__ = __dynamic_placeholder_text_util_text_end__ - __dynamic_placeholder_text_util_text_start__;
+    __gpu_regs_text_size__ = __gpu_regs_text_end__ - __gpu_regs_text_start__;
+    __international_string_util_text_size__ = __international_string_util_text_end__ - __international_string_util_text_start__;
+    __load_save_text_size__ = __load_save_text_end__ - __load_save_text_start__;
+    __malloc_text_size__ = __malloc_text_end__ - __malloc_text_start__;
+    __menu_text_size__ = __menu_text_end__ - __menu_text_start__;
+    __menu_helpers_text_size__ = __menu_helpers_text_end__ - __menu_helpers_text_start__;
+    __overworld_text_size__ = __overworld_text_end__ - __overworld_text_start__;
+    __palette_text_size__ = __palette_text_end__ - __palette_text_start__;
+    __pokedex_text_size__ = __pokedex_text_end__ - __pokedex_text_start__;
+    __pokemon_text_size__ = __pokemon_text_end__ - __pokemon_text_start__;
+    __pokemon_icon_text_size__ = __pokemon_icon_text_end__ - __pokemon_icon_text_start__;
+    __pokemon_storage_system_text_size__ = __pokemon_storage_system_text_end__ - __pokemon_storage_system_text_start__;
+    __random_text_size__ = __random_text_end__ - __random_text_start__;
+    __save_text_size__ = __save_text_end__ - __save_text_start__;
+    __script_menu_text_size__ = __script_menu_text_end__ - __script_menu_text_start__;
+    __sprite_text_size__ = __sprite_text_end__ - __sprite_text_start__;
+    __string_util_text_size__ = __string_util_text_end__ - __string_util_text_start__;
+    __task_text_size__ = __task_text_end__ - __task_text_start__;
+    __text_window_text_size__ = __text_window_text_end__ - __text_window_text_start__;
+    __util_text_size__ = __util_text_end__ - __util_text_start__;
+    __window_text_size__ = __window_text_end__ - __window_text_start__;
+    __gflib_text_size__ = __window_text_end__ - __flash_text_start__;
+    __src_rodata_size__ = __src_rodata_end__ - __src_rodata_start__;
+    __flash_rodata_size__ = __flash_rodata_end__ - __flash_rodata_start__;
+    __bg_rodata_size__ = __bg_rodata_end__ - __bg_rodata_start__;
+    __data_rodata_size__ = __data_rodata_end__ - __data_rodata_start__;
+    __graphics_rodata_size__ = __graphics_rodata_end__ - __graphics_rodata_start__;
+    __palette_rodata_size__ = __palette_rodata_end__ - __palette_rodata_start__;
+    __pokemon_rodata_size__ = __pokemon_rodata_end__ - __pokemon_rodata_start__;
+    __pokemon_icon_rodata_size__ = __pokemon_icon_rodata_end__ - __pokemon_icon_rodata_start__;
+    __pokemon_storage_system_rodata_size__ = __pokemon_storage_system_rodata_end__ - __pokemon_storage_system_rodata_start__;
+    __save_rodata_size__ = __save_rodata_end__ - __save_rodata_start__;
+    __sprite_rodata_size__ = __sprite_rodata_end__ - __sprite_rodata_start__;
+    __string_util_rodata_size__ = __string_util_rodata_end__ - __string_util_rodata_start__;
+    __strings_rodata_size__ = __strings_rodata_end__ - __strings_rodata_start__;
+    __text_window_rodata_size__ = __text_window_rodata_end__ - __text_window_rodata_start__;
+    __util_rodata_size__ = __util_rodata_end__ - __util_rodata_start__;
     /DISCARD/ :
     {
         *(*);

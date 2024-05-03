@@ -55,6 +55,7 @@ struct LinkGSCTrade
     u8 bufferCmd;
     u8 latestData;
     u8 timerState;
+    u8 *payload;
 };
 
 static struct LinkGSCTrade *sLinkGSCTrade;
@@ -63,8 +64,7 @@ extern const u8 gShellCode_Trade_GSC_JPN_Start[];
 extern const u8 gShellCode_Trade_GSC_JPN_End[];
 extern const u8 gShellCode_Trade_GSC_INTL_Start[];
 extern const u8 gShellCode_Trade_GSC_INTL_End[];
-extern const u8 gPayload_GSC_transfer_tool_Start[];
-extern const u8 gPayload_GSC_transfer_tool_End[];
+const u32 gPayload_GSC_transfer_tool[] = INCBIN_U32("data/payload_GSC_transfer_tool.bin.lz");
 
 const struct LinkDataParams paramsJpn = {
     .linkDataLength = SERIAL_PREAMBLE_LENGTH + (NAME_LENGTH_GSC_JP + 1) + sizeof(u8) + PARTY_LENGTH + sizeof(u8) + sizeof(u16) + PARTYMON_STRUCT_LENGTH * PARTY_LENGTH + PARTY_LENGTH * (NAME_LENGTH_GSC_JP + 1) * 2 + 7,
@@ -312,7 +312,7 @@ static void IntrSerial_LinkGSCTrade(void) {
                 data = 0xFD;
             }
             else if (sLinkGSCTrade->subState == 1) {
-                data = gPayload_GSC_transfer_tool_Start[sLinkGSCTrade->currenrBufferOffset];
+                data = sLinkGSCTrade->payload[sLinkGSCTrade->currenrBufferOffset];
                 if (data == 0xFE || data == 0xFF) {
                     sLinkGSCTrade->subState++;
                     data = 0xFF;
@@ -322,14 +322,14 @@ static void IntrSerial_LinkGSCTrade(void) {
             }
             else if (sLinkGSCTrade->subState == 2) {
                 sLinkGSCTrade->subState = 1;
-                data = gPayload_GSC_transfer_tool_Start[sLinkGSCTrade->currenrBufferOffset++];
+                data = sLinkGSCTrade->payload[sLinkGSCTrade->currenrBufferOffset++];
             }
             else if (sLinkGSCTrade->subState == 3) {
                 sLinkGSCTrade->subState++;
                 data = 0xFE;
             }
             else if (sLinkGSCTrade->subState == 4) {
-                data = CalcCRC8(&gPayload_GSC_transfer_tool_Start[(sLinkGSCTrade->bufferCmd & 0x0F) * 0x100], 0x100);
+                data = CalcCRC8(&sLinkGSCTrade->payload[(sLinkGSCTrade->bufferCmd & 0x0F) * 0x100], 0x100);
                 sLinkGSCTrade->state = STATE_SENDING_PAYLOAD_STANDBY;
                 if (sLinkGSCTrade->callback)
                     sLinkGSCTrade->callback(sLinkGSCTrade->state, TRUE);
@@ -388,6 +388,8 @@ void ExitLinkGSCTrade() {
     REG_TM3CNT_H = 0;
     REG_SIOCNT = REG_SIOCNT & ~SIO_INTR_ENABLE;
     if (sLinkGSCTrade) {
+        if (sLinkGSCTrade->payload)
+            FREE_AND_SET_NULL(sLinkGSCTrade->payload);
         for (i = 0; i < SERIAL_MAX_BUFFERS; i++)
             if (sLinkGSCTrade->buffers[i])
                 FREE_AND_SET_NULL(sLinkGSCTrade->buffers[i]);
@@ -410,6 +412,8 @@ void SetupLinkGSCTrade(bool8 isJPN, NotifyStatusChangedCallback callback) {
     sLinkGSCTrade->bufferLengths[1] = params->linkDataLength;
     sLinkGSCTrade->bufferLengths[2] = SERIAL_PATCH_LIST_LENGTH;
     sLinkGSCTrade->bufferLengths[3] = params->mailDataLength;
+    sLinkGSCTrade->payload = (u8 *)Alloc(gPayload_GSC_transfer_tool[0] >> 8);
+    LZ77UnCompWram(gPayload_GSC_transfer_tool, sLinkGSCTrade->payload);
 
     for (i = 0; i < SERIAL_MAX_BUFFERS; i++) 
         sLinkGSCTrade->buffers[i] = (u8 *)AllocZeroed(sLinkGSCTrade->bufferLengths[i]);
