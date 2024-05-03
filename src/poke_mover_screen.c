@@ -802,7 +802,6 @@ static bool8 InitBGs(struct Task * task)
         case 1:
             DecompressAndLoadBgGfxDirectly(sScrollingBg_Gfx, TILEMAP_SCROLL_BG_BEGIN);
             LZ77UnCompVram(sScrollingBg_Tilemap, (void *)BG_SCREEN_ADDR(14));
-            LoadPalette(sScrollingBg_Pal, BG_PLTT_ID(3), 32);
             task->tSubState++;
             break;
         case 2:
@@ -1201,8 +1200,8 @@ static bool8 DrawLegalityView(u8 index, u8 tilemapTop, struct LegalityCheckResul
                 DrawText(sPokeMoverContext->legalityView.windowIds[index], str, 32, 16, NULL, TRUE);
             }
             else {
-                HighlightInvalidNameChars(str, gStringVar4, legalityCheckresult->nameInvalidFlags, language);
-                DrawText(sPokeMoverContext->legalityView.windowIds[index], gStringVar4, 32, 16, NULL, TRUE);
+                HighlightInvalidNameChars(str, gStringVar3, legalityCheckresult->nameInvalidFlags, language);
+                DrawText(sPokeMoverContext->legalityView.windowIds[index], gStringVar3, 32, 16, NULL, TRUE);
             }
             sPokeMoverContext->legalityView.state++;
             break;
@@ -1271,24 +1270,24 @@ static bool8 DrawLeftViewOfBox(struct Task *task) {
         task->tBoxState++;
         break;
     case 6:
-        ConvertIntToDecimalStringN(StringCopy(gStringVar4, gText_TrainerCardIDNo), (sPokeMoverContext->baseData.trainerID[0] << 8) | sPokeMoverContext->baseData.trainerID[1], STR_CONV_MODE_LEADING_ZEROS, 5);
+        ConvertIntToDecimalStringN(StringCopy(gStringVar3, gText_TrainerCardIDNo), (sPokeMoverContext->baseData.trainerID[0] << 8) | sPokeMoverContext->baseData.trainerID[1], STR_CONV_MODE_LEADING_ZEROS, 5);
         PutWindowTilemap(sPokeMoverContext->boxView.gscPlayerTrainerIdWinId);
         FillWindowPixelBuffer(sPokeMoverContext->boxView.gscPlayerTrainerIdWinId, PIXEL_FILL(0));
-        DrawText(sPokeMoverContext->boxView.gscPlayerTrainerIdWinId, gStringVar4, 2, 3, colors, TRUE);
+        DrawText(sPokeMoverContext->boxView.gscPlayerTrainerIdWinId, gStringVar3, 2, 3, colors, TRUE);
         task->tBoxState++;
         break;
     case 7:
         if (sPokeMoverContext->baseData.gameLang == LANGUAGE_JAPANESE)
         {
-            gStringVar4[0] = EXT_CTRL_CODE_BEGIN;
-            gStringVar4[1] = EXT_CTRL_CODE_JPN;
-            DecodeGSCString(&gStringVar4[2], NAME_LENGTH_GSC_JP + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_JP + 1, sPokeMoverContext->baseData.gameVer, sPokeMoverContext->baseData.gameLang);
+            gStringVar3[0] = EXT_CTRL_CODE_BEGIN;
+            gStringVar3[1] = EXT_CTRL_CODE_JPN;
+            DecodeGSCString(&gStringVar3[2], NAME_LENGTH_GSC_JP + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_JP + 1, sPokeMoverContext->baseData.gameVer, sPokeMoverContext->baseData.gameLang);
         }
         else
-            DecodeGSCString(gStringVar4, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.gameVer, sPokeMoverContext->baseData.gameLang);
+            DecodeGSCString(gStringVar3, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.gameVer, sPokeMoverContext->baseData.gameLang);
         PutWindowTilemap(sPokeMoverContext->boxView.gscPlayerNameWinId);
         FillWindowPixelBuffer(sPokeMoverContext->boxView.gscPlayerNameWinId, PIXEL_FILL(0));
-        DrawText(sPokeMoverContext->boxView.gscPlayerNameWinId, gStringVar4, 2, 3, colors, TRUE);
+        DrawText(sPokeMoverContext->boxView.gscPlayerNameWinId, gStringVar3, 2, 3, colors, TRUE);
         task->tBoxState++;
         break;
     case 8:
@@ -1427,7 +1426,7 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         task->tSubState++;
         break;
     case 1:
-        if (!gPaletteFade.active && HandleMessage())
+        if (HandleMessage())
         {
             DrawOptions(sPokeMoverLanguageOptions, ARRAY_COUNT(sPokeMoverLanguageOptions), &sWindowTemplate_PokeMoverLanguageOptions, &task->tWindowId);
             CopyWindowToVram(task->tWindowId, COPYWIN_FULL);
@@ -1449,7 +1448,7 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         task->tSubState++;
         break;
     case 4:
-        if (!gPaletteFade.active && HandleMessage())
+        if (HandleMessage())
         {
             TryHandshakeWithGSC();
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
@@ -1474,7 +1473,7 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         }
         break;
     case 6:
-        if (!gPaletteFade.active && !FreeTempTileDataBuffersIfPossible() && HandleMessage()) {
+        if (!FreeTempTileDataBuffersIfPossible() && HandleMessage()) {
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
             DrawMessage(gMsgUsageStep4OfSendingTransferToolOverExploit, 2);
             task->tTutorialFrame = 0;
@@ -1483,7 +1482,7 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         }
         break;
     case 7:
-        if (!gPaletteFade.active && HandleMessage()) {
+        if (HandleMessage()) {
             TryEnteringGSCTradeView();
             FillBgTilemapBufferRect(0, 0, 5, 2, 20, 10, 0);
             ScheduleBgCopyTilemapToVram(0);
@@ -2055,7 +2054,7 @@ static int HandleRecvingView(struct Task *task) {
             }
             break;
         case 30:
-            if (!gPaletteFade.active && HandleMessage())
+            if (HandleMessage())
             {
                 ClearDialogWindowAndFrame(0, TRUE);
                 task->tLegalityViewState = 0;
@@ -2175,7 +2174,7 @@ static s32 HandleInfoView(struct Task * task) {
             task->tSubState = 7;
             break;
         case 7:
-            if (!gPaletteFade.active && HandleMessage())
+            if (HandleMessage())
             {
                 task->tSubState = 0;
             }
@@ -2262,7 +2261,7 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
             }
             break;
         case 5:
-            if (!gPaletteFade.active && HandleMessage())
+            if (HandleMessage())
             {
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
                 DrawText(0, gTextSending, 0, 0, NULL, TRUE);
@@ -2279,7 +2278,7 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
                 task->tState = 0;
             break;
         case 8:
-            if (!gPaletteFade.active && HandleMessage())
+            if (HandleMessage())
             {
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
                 DrawText(0, gTextLinking, 0, 0, NULL, TRUE);
@@ -2330,8 +2329,6 @@ static void Task_SetupPokeMover(u8 taskId)
             task->tState++;
             break;
         case 4:
-            ResetPaletteFade();
-            gPaletteFade.bufferTransferDisabled = TRUE;
             task->tState++;
             break;
         case 5:
@@ -2364,29 +2361,27 @@ static void Task_SetupPokeMover(u8 taskId)
             }
             break;
         case 10:
+            SetVBlankCallback(VBlankCB_PokeMover);
+            task->tState++;
+            break;
+        case 11:
             if (InitScrollableBoxView()) 
                 task->tState++;
             break;
-        case 11:
+        case 12:
             InitTextView();
             task->tState++;
             break;
-        case 12:
-            BlendPalettes(PALETTES_ALL, 16, 0);
-            task->tState++;
-            break;
         case 13:
-            BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
-            gPaletteFade.bufferTransferDisabled = FALSE;
+            LoadPalette(sScrollingBg_Pal, BG_PLTT_ID(3), 32);
             task->tState++;
             break;
         case 14:
-            SetVBlankCallback(VBlankCB_PokeMover);
             DrawMessage(gMsgWelcomeForPokeMover, 2);
             task->tState++;
             break;
         case 15:
-            if (!gPaletteFade.active && HandleMessage())
+            if (HandleMessage())
             {
                 task->tState = 0;
                 gTasks[taskId].func = Task_HandlePokeMoverMenu;
@@ -2400,7 +2395,6 @@ static void CB2_PokeMover(void)
     RunTasks();
     BuildOamBuffer();
     DoScheduledBgTilemapCopiesToVram();
-    UpdatePaletteFade();
 }
 
 static void CB2_ExitPokeMover(void)
@@ -2417,7 +2411,6 @@ static void VBlankCB_PokeMover(void)
     }
     LoadOam();
     ProcessSpriteCopyRequests();
-    TransferPlttBuffer();
 }
 
 void ShowPokeMoverScreen(u8 boxOption)

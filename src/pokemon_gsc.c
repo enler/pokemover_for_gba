@@ -2,6 +2,7 @@
 #include "item.h"
 #include "main.h"
 #include "math_fast.h"
+#include "overworld.h"
 #include "pokemon.h"
 #include "pokemon_gsc.h"
 #include "string_util.h"
@@ -639,6 +640,29 @@ int FindIndexIfGSCBoxMonIsEggless(struct BoxPokemonGSC *boxMonGSC) {
     return -1;
 }
 
+static void CreateBoxMonFromGSC(struct BoxPokemon *boxMon, u16 species, u8 level, u32 fixedPersonality, u32 fixedOtId) {
+    u16 checksum;
+    u32 value;
+    ZeroBoxMonData(boxMon);
+    SetBoxMonData(boxMon, MON_DATA_PERSONALITY, &fixedPersonality);
+    SetBoxMonData(boxMon, MON_DATA_OT_ID, &fixedOtId);
+    checksum = CalculateBoxMonChecksum(boxMon);
+    SetBoxMonData(boxMon, MON_DATA_CHECKSUM, &checksum);
+    EncryptBoxMon(boxMon);
+    SetBoxMonData(boxMon, MON_DATA_SPECIES, &species);
+    SetBoxMonData(boxMon, MON_DATA_EXP, &gExperienceTables[gSpeciesInfo[species].growthRate][level]);
+
+    value = GetCurrentRegionMapSectionId();
+    SetBoxMonData(boxMon, MON_DATA_MET_LOCATION, &value);
+    SetBoxMonData(boxMon, MON_DATA_MET_GAME, &gGameVersion);
+
+    if (gSpeciesInfo[species].abilities[1])
+    {
+        value = fixedPersonality & 1;
+        SetBoxMonData(boxMon, MON_DATA_ABILITY_NUM, &value);
+    }
+}
+
 bool8 ConvertEgglessBoxMonFromGSC(struct BoxPokemon *boxMon, struct BoxPokemonGSC *boxMonGSC, u8 * origNickName, u8 * origOtName, u8 otGender, u8 gameVer, u8 language, struct LegalityCheckResult * legalityCheckResult) {
     u8 level, abilityNum, moves[MAX_MON_MOVES], *movePtr, ppBonuses, ppBonusBuff[MAX_MON_MOVES], *ppBonusPtr, 
        gender, friendship, pokerus, metGameVer, iv, nameLanguage,
@@ -685,7 +709,7 @@ bool8 ConvertEgglessBoxMonFromGSC(struct BoxPokemon *boxMon, struct BoxPokemonGS
         level = MAX_LEVEL;
     else if (level < MIN_LEVEL)
         level = MIN_LEVEL;
-    CreateBoxMon(boxMon, template->species, level, USE_RANDOM_IVS, TRUE, pid, OT_ID_PRESET, (param.otIdHi << 16) | param.otIdLo);
+    CreateBoxMonFromGSC(boxMon, template->species, level, pid, (param.otIdHi << 16) | param.otIdLo);
 
     // pokeball
     SetBoxMonData(boxMon, MON_DATA_POKEBALL, &fixedBall);
@@ -848,7 +872,7 @@ bool8 ConvertBoxMonFromGSC(struct BoxPokemon *boxMon, struct BoxPokemonGSC *boxM
     if (nameLanguage == LANGUAGE_KOREAN)
         nameLanguage = LANGUAGE_CHINESE;
 
-    CreateBoxMon(boxMon, species, level, USE_RANDOM_IVS, TRUE, pid, OT_ID_PRESET, (param.otIdHi << 16) | param.otIdLo);
+    CreateBoxMonFromGSC(boxMon, species, level, pid, (param.otIdHi << 16) | param.otIdLo);
 
     SetBoxMonData(boxMon, MON_DATA_POKEBALL, &fixedBall);
 

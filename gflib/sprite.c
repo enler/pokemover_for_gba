@@ -3,7 +3,7 @@
 #include "main.h"
 #include "palette.h"
 
-#define MAX_SPRITE_COPY_REQUESTS 64
+#define MAX_SPRITE_COPY_REQUESTS 40
 
 #define OAM_MATRIX_COUNT 32
 

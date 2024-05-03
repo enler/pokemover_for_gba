@@ -368,6 +368,7 @@ s32 GetStringWidth(u8 fontId, const u8 *str, s16 letterSpacing) {
     int glyphWidth;
     s32 width;
     u32 glyphIdx;
+    u8 hiChar;
 
     isJapanese = 0;
 
@@ -404,9 +405,14 @@ s32 GetStringWidth(u8 fontId, const u8 *str, s16 letterSpacing) {
         case 0x07 ... 0x1A:
         case 0x1C ... 0x1E:
             if (!isJapanese) {
-                if (str[1] >= 0x00 && str[1] <= 0xF6)
-                {
-                    glyphIdx = str[0] * 0xF7 + str[1];
+                if (str[1] >= 0x00 && str[1] <= 0xF6) {
+                    hiChar = str[0];
+                    if (hiChar >= 0x07)
+                        hiChar--;
+                    if (hiChar >= 0x1B)
+                        hiChar--;
+                    hiChar--;
+                    glyphIdx = hiChar * 0xF7 + str[1];
                     if (glyphIdx < sizeof(gCHSFont1bpp) / 16)
                         glyphPtr = &gCHSFont1bpp[glyphIdx * 16];
                     else
@@ -417,10 +423,11 @@ s32 GetStringWidth(u8 fontId, const u8 *str, s16 letterSpacing) {
                     break;
                 }
             }
-            lineWidth += 8;
-            break;
         default:
-            lineWidth += gLatinFont1bppWidthTable[str[0]];
+            if (isJapanese)
+                lineWidth += 8;
+            else 
+                lineWidth += gLatinFont1bppWidthTable[str[0]];
             break;
         }
         ++str;

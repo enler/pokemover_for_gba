@@ -149,19 +149,6 @@ SECTIONS {
 		gflib.a:overworld.o(.text.Overworld_GetMapHeaderByGroupAndId)
         __overworld_text_end__ = .;
         __palette_text_start__ = .;
-		gflib.a:palette.o(.text.BeginNormalPaletteFade)
-		gflib.a:palette.o(.text.BlendPalettes)
-		gflib.a:palette.o(.text.IsSoftwarePaletteFadeFinishing)
-		gflib.a:palette.o(.text.LoadPalette)
-		gflib.a:palette.o(.text.PaletteStruct_Reset);
-		gflib.a:palette.o(.text.ResetPaletteFade)
-		gflib.a:palette.o(.text.ResetPaletteFadeControl);
-		gflib.a:palette.o(.text.TransferPlttBuffer)
-		gflib.a:palette.o(.text.UpdateBlendRegisters);
-		gflib.a:palette.o(.text.UpdateFastPaletteFade);
-		gflib.a:palette.o(.text.UpdateHardwarePaletteFade);
-		gflib.a:palette.o(.text.UpdateNormalPaletteFade);
-		gflib.a:palette.o(.text.UpdatePaletteFade)
         __palette_text_end__ = .;
         __pokedex_text_start__ = .;
 		gflib.a:pokedex.o(.text.GetSetPokedexFlag);
@@ -170,13 +157,11 @@ SECTIONS {
 		gflib.a:pokemon.o(.text.BoxMonRestorePP);
 		gflib.a:pokemon.o(.text.CalculateBoxMonChecksum);
 		gflib.a:pokemon.o(.text.CalculatePPWithBonus);
-		gflib.a:pokemon.o(.text.CreateBoxMon);
 		gflib.a:pokemon.o(.text.DecryptBoxMon);
 		gflib.a:pokemon.o(.text.DeleteFirstMoveAndGiveMoveToBoxMon);
 		gflib.a:pokemon.o(.text.EncryptBoxMon);
 		gflib.a:pokemon.o(.text.GetBoxMonData3);
 		gflib.a:pokemon.o(.text.GetLevelFromBoxMonExp);
-		gflib.a:pokemon.o(.text.GetSpeciesName);
 		gflib.a:pokemon.o(.text.GetSubstruct);
 		gflib.a:pokemon.o(.text.GiveBoxMonInitialMoveset);
 		gflib.a:pokemon.o(.text.GiveMoveToBoxMon);
@@ -263,20 +248,9 @@ SECTIONS {
         __sprite_text_end__ = .;
         __string_util_text_start__ = .;
 		gflib.a:string_util.o(.text.ConvertIntToDecimalStringN);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_Aqua);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_Archie);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_Groudon);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_KunChan);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_Kyogre);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_Magma);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_Maxie);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_PlayerName);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_RivalName);
 		gflib.a:string_util.o(.text.ExpandPlaceholder_StringVar1);
 		gflib.a:string_util.o(.text.ExpandPlaceholder_StringVar2);
 		gflib.a:string_util.o(.text.ExpandPlaceholder_StringVar3);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_UnknownStringVar);
-		gflib.a:string_util.o(.text.ExpandPlaceholder_Version);
 		gflib.a:string_util.o(.text.GetExpandedPlaceholder);
 		gflib.a:string_util.o(.text.StringCopy);
 		gflib.a:string_util.o(.text.StringCopyN);
@@ -300,7 +274,6 @@ SECTIONS {
 		gflib.a:text_window.o(.text.LoadWindowGfx)
         __text_window_text_end__ = .;
         __util_text_start__ = .;
-		gflib.a:util.o(.text.BlendPalette);
         __util_text_end__ = .;
         __window_text_start__ = .;
 		gflib.a:window.o(.text.AddWindow);
@@ -356,7 +329,6 @@ SECTIONS {
         __bg_rodata_end__ = .;
         __data_rodata_start__ = .;
 		gflib.a:data.o(.rodata.gMoveNames);
-		gflib.a:data.o(.rodata.gSpeciesNames);
 		gflib.a:data.o(.rodata.gText_BadEgg)
         __data_rodata_end__ = .;
         . = ALIGN(4);
@@ -787,7 +759,6 @@ SECTIONS {
 		gflib.a:graphics.o(.rodata.gWallpaperTiles_Ribbon);
         __graphics_rodata_end__ = .;
         __palette_rodata_start__ = .;
-		gflib.a:palette.o(.rodata.sDummyPaletteStructTemplate);
         __palette_rodata_end__ = .;
         __pokemon_rodata_start__ = .;
 		gflib.a:pokemon.o(.rodata.gBattleMoves);
@@ -1337,18 +1308,7 @@ SECTIONS {
         __strings_rodata_start__ = .;
 		gflib.a:strings.o(.rodata.gText_Box);
 		gflib.a:strings.o(.rodata.gText_EggNickname);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Aqua);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Archie);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Brendan);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Chan);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Emerald);
 		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Empty);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Groudon);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Kun);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Kyogre);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Magma);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_Maxie);
-		gflib.a:strings.o(.rodata.gText_ExpandedPlaceholder_May);
 		gflib.a:strings.o(.rodata.gText_SelectorArrow3);
 		gflib.a:strings.o(.rodata.gText_TrainerCardIDNo);
 		gflib.a:strings.o(.rodata.gText_YesNo);
@@ -1465,11 +1425,6 @@ SECTIONS {
 		gflib.a:menu.o(.bss.sTempTileDataBufferIdx);
 		gflib.a:menu.o(.bss.sTileNum);
 		gflib.a:menu.o(.bss.sYesNoWindowId);
-		gflib.a:palette.o(.bss.gPaletteFade);
-		gflib.a:palette.o(.bss.gPlttBufferFaded);
-		gflib.a:palette.o(.bss.gPlttBufferUnfaded);
-		gflib.a:palette.o(.bss.sPaletteStructs);
-		gflib.a:palette.o(.bss.sPlttBufferTransferPending);
 		gflib.a:pokemon.o(.bss.gPlayerParty);
 		gflib.a:pokemon.o(.bss.gPlayerPartyCount);
 		gflib.a:pokemon_storage_system.o(.bss.sPreviousBoxOption);
@@ -1508,8 +1463,6 @@ SECTIONS {
 		gflib.a:string_util.o(.bss.gStringVar1);
 		gflib.a:string_util.o(.bss.gStringVar2);
 		gflib.a:string_util.o(.bss.gStringVar3);
-		gflib.a:string_util.o(.bss.gStringVar4);
-		gflib.a:string_util.o(.bss.sUnknownStringVar);
 		gflib.a:task.o(.bss.gTasks);
 		gflib.a:window.o(.bss.gTransparentTileNumber);
 		gflib.a:window.o(.bss.gWindowBgTilemapBuffers);
