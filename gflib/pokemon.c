@@ -30,6 +30,7 @@
 #include "recorded_battle.h"
 #include "rtc.h"
 #include "sound.h"
+#include "save_variables.h"
 #include "string_util.h"
 #include "strings.h"
 #include "task.h"
@@ -6912,9 +6913,9 @@ void HandleSetPokedexFlag(u16 nationalNum, u8 caseId, u32 personality)
     {
         GetSetPokedexFlag(nationalNum, caseId);
         if (NationalPokedexNumToSpecies(nationalNum) == SPECIES_UNOWN)
-            gSaveBlock2Ptr->pokedex.unownPersonality = personality;
+            gPokedex->unownPersonality = personality;
         if (NationalPokedexNumToSpecies(nationalNum) == SPECIES_SPINDA)
-            gSaveBlock2Ptr->pokedex.spindaPersonality = personality;
+            gPokedex->spindaPersonality = personality;
     }
 }
 

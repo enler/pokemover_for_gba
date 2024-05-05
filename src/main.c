@@ -24,10 +24,6 @@ static void SerialIntr(void);
 static void IntrDummy(void);
 static void ReadKeys(void);
 
-const u8 gGameVersion = GAME_VERSION;
-
-const u8 gGameLanguage = GAME_LANGUAGE; // English
-
 u32 gBattleTypeFlags = 0;
 
 IntrFunc gIntrTable[] =
@@ -57,6 +53,7 @@ void AgbMain()
     REG_IME = 0;
     RegisterRamReset(~RESET_EWRAM & 0xFF);
     CpuCopy16(__vram_font_orig__, __vram_font_start__, __vram_font_end__ - __vram_font_start__);
+    CpuFill16(0, gHeap, gHeapEnd - gHeap);
     InitHeap(gHeap, gHeapEnd - gHeap);
 
     REG_WAITCNT = WAITCNT_PREFETCH_ENABLE | WAITCNT_WS0_S_1 | WAITCNT_WS0_N_3;
@@ -66,16 +63,8 @@ void AgbMain()
 
     ClearDma3Requests();
 
-    gSaveBlock1Ptr = Alloc(sizeof(struct SaveBlock1));
-    gSaveBlock2Ptr = Alloc(sizeof(struct SaveBlock2));
-    gPokemonStoragePtr = Alloc(sizeof(struct PokemonStorage));
-
     REG_IME = 1;
     EnableInterrupts(INTR_FLAG_VBLANK);
-
-    CheckForFlashMemory();
-    Save_ResetSaveCounters();
-    LoadGameSave(SAVE_NORMAL);
 
     InitBppConvTable();
 

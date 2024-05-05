@@ -655,7 +655,7 @@ static void CreateBoxMonFromGSC(struct BoxPokemon *boxMon, u16 species, u8 level
 
     value = gRomResource->Overworld_GetMapHeaderByGroupAndId(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum)->regionMapSectionId;
     SetBoxMonData(boxMon, MON_DATA_MET_LOCATION, &value);
-    SetBoxMonData(boxMon, MON_DATA_MET_GAME, &gGameVersion);
+    SetBoxMonData(boxMon, MON_DATA_MET_GAME, &gRomHeader->version);
 
     if (gRomHeader->baseStats[species].abilities[1])
     {
@@ -752,13 +752,13 @@ bool8 ConvertEgglessBoxMonFromGSC(struct BoxPokemon *boxMon, struct BoxPokemonGS
         SetBoxMonData(boxMon, MON_DATA_MET_LOCATION, &unownMetLocation[GET_UNOWN_LETTER(pid)]);
     else
         SetBoxMonData(boxMon, MON_DATA_MET_LOCATION, &template->metLocation);
-    metGameVer = gGameVersion;
+    metGameVer = gRomHeader->version;
     if (template->metGameVer == F_VERSION_GAMECUBE) {
         metGameVer = VERSION_GAMECUBE;
         SetBoxMonData(boxMon, MON_DATA_MET_GAME, &metGameVer);
         SetBoxMonData(boxMon, MON_DATA_NATIONAL_RIBBON, &nationalRibbon);
     }
-    else if ((template->metGameVer & (1 << gGameVersion)) == 0) {
+    else if ((template->metGameVer & (1 << gRomHeader->version)) == 0) {
         while ((template->metGameVer & (1 << metGameVer)) == 0) {
             metGameVer = Random() & 7;
         }

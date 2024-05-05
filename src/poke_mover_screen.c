@@ -61,7 +61,7 @@
 #define BOTTOM_HINT_WIDTH 30
 #define BOTTOM_HINT_HEIGHT 2
 
-#define DecompressAndLoadBgGfxDirectly(src, offset) LZ77UnCompVram(src, (u8*)VRAM + offset * TILE_SIZE_4BPP)
+#define DecompressAndLoadBgGfxDirectly(src, offset) LZ77UnCompVram(src, (u8*)VRAM + (offset) * TILE_SIZE_4BPP)
 
 struct Wallpaper
 {
@@ -610,7 +610,7 @@ static const struct OamData sOamData_GSCHeroIcon =
     .affineParam = 0
 };
 
-static struct Wallpaper sWallpaer;
+static struct Wallpaper sWallpaper;
 
 static const struct BoxDataSource localBoxDataSource = {
     .maxRow = 5,
@@ -702,7 +702,6 @@ static void InitSpritePalette() {
         .tag = PALTAG_BOXTITLE};
     boxTitlePalette[14] = RGB(7, 7, 7);
     boxTitlePalette[15] = RGB_WHITE;
-    LoadMonIconPalettes();
     LoadSpritePalette(&gscHeroSprPal);
     boxTitleSprPal.data = boxTitlePalette;
     LoadSpritePalette(&boxTitleSprPal);
@@ -930,7 +929,18 @@ static u16 GetMonIconSpeciesFromGSCBox(u8 box, u8 row, u8 column, bool8 * isTran
 }
 
 static void GetLocalBoxTitle(u8 box, u8 * boxTitle) {
-    StringCopyN(boxTitle, gPokemonStoragePtr->boxNames[box], BOX_NAME_LENGTH + 1);
+    u8 *tail; 
+    if (gRomHeader->language == LANGUAGE_JAPANESE) {
+        boxTitle[0] = EXT_CTRL_CODE_BEGIN;
+        boxTitle[1] = EXT_CTRL_CODE_JPN;
+        tail = StringCopy(&boxTitle[2], gPokemonStoragePtr->boxNames[box]);
+        tail[0] = EXT_CTRL_CODE_BEGIN;
+        tail[1] = EXT_CTRL_CODE_ENG;
+        tail[2] = EOS;
+    }
+    else {
+        StringCopyN(boxTitle, gPokemonStoragePtr->boxNames[box], BOX_NAME_LENGTH + 1);
+    }
 }
 
 static void GetGSCBoxTitle(u8 box, u8 * boxTitle) {
@@ -944,26 +954,26 @@ static const struct Wallpaper * GetLocalBoxWallpaper(u8 box, bool8 * isWaldaWall
     if (wallPaperId != 16)
     {
         *isWaldaWallpaper = FALSE;
-        sWallpaer.tiles = GetWallpaperTiles(wallPaperId, FALSE);
-        sWallpaer.tilemap = GetWallpaperTilemap(wallPaperId, FALSE);
-        sWallpaer.palettes = GetWallpaperPalette(wallPaperId, FALSE);
-        return &sWallpaer;
+        sWallpaper.tiles = GetWallpaperTiles(wallPaperId, FALSE);
+        sWallpaper.tilemap = GetWallpaperTilemap(wallPaperId, FALSE);
+        sWallpaper.palettes = GetWallpaperPalette(wallPaperId, FALSE);
+        return &sWallpaper;
     }
     else {
         *isWaldaWallpaper = TRUE;
-        sWallpaer.tiles = GetWallpaperTiles(waldaPatternId, TRUE);
-        sWallpaer.tilemap = GetWallpaperTilemap(waldaPatternId, TRUE);
-        sWallpaer.palettes = GetWallpaperPalette(waldaPatternId, TRUE);
-        return &sWallpaer;
+        sWallpaper.tiles = GetWallpaperTiles(waldaPatternId, TRUE);
+        sWallpaper.tilemap = GetWallpaperTilemap(waldaPatternId, TRUE);
+        sWallpaper.palettes = GetWallpaperPalette(waldaPatternId, TRUE);
+        return &sWallpaper;
     }
 }
 
 static const struct Wallpaper * GetGSCBoxWallpaper(u8 box, bool8 * isWaldaWallpaper) {
     *isWaldaWallpaper = FALSE;
-    sWallpaer.tiles = GetWallpaperTiles(box, FALSE);
-    sWallpaer.tilemap = GetWallpaperTilemap(box, FALSE);
-    sWallpaer.palettes = GetWallpaperPalette(box, FALSE);
-    return &sWallpaer;
+    sWallpaper.tiles = GetWallpaperTiles(box, FALSE);
+    sWallpaper.tilemap = GetWallpaperTilemap(box, FALSE);
+    sWallpaper.palettes = GetWallpaperPalette(box, FALSE);
+    return &sWallpaper;
 }
 
 static void CreateIncomingBoxMonIcon(u8 box, int direction) {
@@ -1095,7 +1105,7 @@ static bool8 DrawBoxWallpaper(int direction) {
     switch (sPokeMoverContext->boxView.state)
     {
         case 0:
-            DecompressAndCopyTileDataToVram(2, wallpaper->tiles, 0, TILEMAP_WALLPAPER_BEGIN + sPokeMoverContext->boxView.slot * 128, 0);
+            DecompressAndLoadBgGfxDirectly(wallpaper->tiles, TILEMAP_WALLPAPER_BEGIN + sPokeMoverContext->boxView.slot * 128);
             sPokeMoverContext->boxView.state++;
             break;
         case 1:
@@ -1110,9 +1120,12 @@ static bool8 DrawBoxWallpaper(int direction) {
                 tempPalette[17] = tempPalette[1] = gSaveBlock1Ptr->waldaPhrase.colors[0];
                 tempPalette[18] = tempPalette[2] = gSaveBlock1Ptr->waldaPhrase.colors[1];
                 LoadPalette(tempPalette, BG_PLTT_ID(4) + BG_PLTT_ID(sPokeMoverContext->boxView.slot * 2), 2 * PLTT_SIZE_4BPP);
+                DecompressAndLoadBgGfxDirectly(gRomResource->waldaWallpaperIcons[GetWaldaWallpaperIconId()], TILEMAP_WALLPAPER_BEGIN + sPokeMoverContext->boxView.slot * 128 + 64);
             }
-            else
-                LoadPalette(wallpaper->palettes, BG_PLTT_ID(4) + BG_PLTT_ID(sPokeMoverContext->boxView.slot * 2), 2 * PLTT_SIZE_4BPP);
+            else {
+                bool8 isRubySapp = gRomHeader->version == VERSION_RUBY || gRomHeader->version == VERSION_SAPPHIRE;
+                LoadPalette(wallpaper->palettes + 16 * isRubySapp, BG_PLTT_ID(4) + BG_PLTT_ID(sPokeMoverContext->boxView.slot * 2), 2 * PLTT_SIZE_4BPP);
+            }
             sPokeMoverContext->boxView.state++;
             break;
         case 3:
@@ -2405,9 +2418,10 @@ static void Task_SetupPokeMover(u8 taskId)
             }
             break;
         case 17:
-            //TODO detect cart
-            if (DetectCart())
+            if (DetectRom()) {
                 task->tState += 2;
+                LoadMonIconPalettes();
+            }
             else {
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
                 DrawDelayedMessage(0, gTextInvaildCart, 180);
@@ -2422,11 +2436,15 @@ static void Task_SetupPokeMover(u8 taskId)
             }
             break;
         case 19:
-            //TODO detect save
+            if (DetectSave())
+                task->tState++;
+            else {
+                FillWindowPixelBuffer(0, PIXEL_FILL(1));
+                DrawDelayedMessage(0, gTextInvaildSave, 180);
+                task->tState--;
+            }
             break;
         case 20:
-            break;
-        case 255:
             task->tState = 0;
             gTasks[taskId].func = Task_HandlePokeMoverMenu;
             break;

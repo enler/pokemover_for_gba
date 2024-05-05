@@ -18,6 +18,7 @@
 #include "pokedex_cry_screen.h"
 #include "scanline_effect.h"
 #include "sound.h"
+#include "save_variables.h"
 #include "sprite.h"
 #include "string_util.h"
 #include "strings.h"
@@ -4269,44 +4270,44 @@ s8 GetSetPokedexFlag(u16 nationalDexNo, u8 caseID)
     switch (caseID)
     {
     case FLAG_GET_SEEN:
-        if (gSaveBlock2Ptr->pokedex.seen[index] & mask)
+        if (gPokedex->seen[index] & mask)
         {
-            if ((gSaveBlock2Ptr->pokedex.seen[index] & mask) == (gSaveBlock1Ptr->seen1[index] & mask)
-             && (gSaveBlock2Ptr->pokedex.seen[index] & mask) == (gSaveBlock1Ptr->seen2[index] & mask))
+            if ((gPokedex->seen[index] & mask) == (gPokedexSeen1[index] & mask)
+             && (gPokedex->seen[index] & mask) == (gPokedexSeen2[index] & mask))
                 retVal = 1;
             else
             {
-                gSaveBlock2Ptr->pokedex.seen[index] &= ~mask;
-                gSaveBlock1Ptr->seen1[index] &= ~mask;
-                gSaveBlock1Ptr->seen2[index] &= ~mask;
+                gPokedex->seen[index] &= ~mask;
+                gPokedexSeen1[index] &= ~mask;
+                gPokedexSeen2[index] &= ~mask;
                 retVal = 0;
             }
         }
         break;
     case FLAG_GET_CAUGHT:
-        if (gSaveBlock2Ptr->pokedex.owned[index] & mask)
+        if (gPokedex->owned[index] & mask)
         {
-            if ((gSaveBlock2Ptr->pokedex.owned[index] & mask) == (gSaveBlock2Ptr->pokedex.seen[index] & mask)
-             && (gSaveBlock2Ptr->pokedex.owned[index] & mask) == (gSaveBlock1Ptr->seen1[index] & mask)
-             && (gSaveBlock2Ptr->pokedex.owned[index] & mask) == (gSaveBlock1Ptr->seen2[index] & mask))
+            if ((gPokedex->owned[index] & mask) == (gPokedex->seen[index] & mask)
+             && (gPokedex->owned[index] & mask) == (gPokedexSeen1[index] & mask)
+             && (gPokedex->owned[index] & mask) == (gPokedexSeen2[index] & mask))
                 retVal = 1;
             else
             {
-                gSaveBlock2Ptr->pokedex.owned[index] &= ~mask;
-                gSaveBlock2Ptr->pokedex.seen[index] &= ~mask;
-                gSaveBlock1Ptr->seen1[index] &= ~mask;
-                gSaveBlock1Ptr->seen2[index] &= ~mask;
+                gPokedex->owned[index] &= ~mask;
+                gPokedex->seen[index] &= ~mask;
+                gPokedexSeen1[index] &= ~mask;
+                gPokedexSeen2[index] &= ~mask;
                 retVal = 0;
             }
         }
         break;
     case FLAG_SET_SEEN:
-        gSaveBlock2Ptr->pokedex.seen[index] |= mask;
-        gSaveBlock1Ptr->seen1[index] |= mask;
-        gSaveBlock1Ptr->seen2[index] |= mask;
+        gPokedex->seen[index] |= mask;
+        gPokedexSeen1[index] |= mask;
+        gPokedexSeen2[index] |= mask;
         break;
     case FLAG_SET_CAUGHT:
-        gSaveBlock2Ptr->pokedex.owned[index] |= mask;
+        gPokedex->owned[index] |= mask;
         break;
     }
     return retVal;

@@ -208,6 +208,10 @@ static bool8 HandleDrawingText() {
                     sTextDrawingContext.isJpnChar = TRUE;
                     sTextDrawingContext.currNarrowFont = gJPNFont1bpp;
                     break;
+                case EXT_CTRL_CODE_ENG:
+                    sTextDrawingContext.isJpnChar = FALSE;
+                    sTextDrawingContext.currNarrowFont = gLatinFont1bpp;
+                    break;
             }
             break;
             case 0x01 ... 0x05:

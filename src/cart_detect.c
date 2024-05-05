@@ -1561,11 +1561,13 @@ static const struct PMRomHeader * gRomHeaders [] = {
 };
 
 const u32 *GetWallpaperTiles(u32 id, bool8 isWaldaWallpaper) {
+    bool8 isRubySapp = gRomHeader->version == VERSION_RUBY || gRomHeader->version == VERSION_SAPPHIRE;
     bool8 isEmerald = gRomHeader->version == VERSION_EMERALD;
+
     if (isEmerald && isWaldaWallpaper)
         return (const u32*)sRomResource.waldaWallpaperTable[id * 3];
     else
-        return (const u32*)sRomResource.wallpaperTable[id * 3];
+        return (const u32*)sRomResource.wallpaperTable[id * (3 + isRubySapp)];
 }
 const u32 *GetWallpaperTilemap(u32 id, bool8 isWaldaWallpaper) {
     bool8 isRubySapp = gRomHeader->version == VERSION_RUBY || gRomHeader->version == VERSION_SAPPHIRE;
@@ -1574,7 +1576,7 @@ const u32 *GetWallpaperTilemap(u32 id, bool8 isWaldaWallpaper) {
     if (isEmerald && isWaldaWallpaper)
         return (const u32*)sRomResource.waldaWallpaperTable[id * 3 + 1];
     else
-        return (const u32*)sRomResource.wallpaperTable[id * 3 + 1 + isRubySapp * 1];
+        return (const u32*)sRomResource.wallpaperTable[id * (3 + isRubySapp) + 1 + isRubySapp];
 }
 
 const u16 *GetWallpaperPalette(u32 id, bool8 isWaldaWallpaper) {
@@ -1584,7 +1586,7 @@ const u16 *GetWallpaperPalette(u32 id, bool8 isWaldaWallpaper) {
     if (isEmerald && isWaldaWallpaper)
         return (const u16*)sRomResource.waldaWallpaperTable[id * 3 + 2];
     else
-        return (const u16*)sRomResource.wallpaperTable[id * 3 + 2 + isRubySapp * 1];
+        return (const u16*)sRomResource.wallpaperTable[id * (3 + isRubySapp) + 2 + isRubySapp];
 }
 
 bool8 SearchResource() {
@@ -1648,7 +1650,7 @@ bool8 SearchResource() {
     memset(results, 0, sizeof(results));
     funcSearchPatterns(0x8000000, 0x8100000, patternsPtrs, 1, results, sizeof(sOverworld_GetMapHeaderByGroupAndIdPattern) / sizeof(u32));
     if (results[0])
-        sRomResource.Overworld_GetMapHeaderByGroupAndId = (struct MapHeader const *const (*)(u16, u16))results[0];
+        sRomResource.Overworld_GetMapHeaderByGroupAndId = (struct MapHeader const *const (*)(u16, u16))((u32)results[0] | 1);
     else
         return FALSE;
 
@@ -1698,7 +1700,7 @@ void SetRomHeaderForRS() {
     }
 }
 
-bool8 DetectCart() {
+bool8 DetectRom() {
     u32 gameCode = ROM_GAME_CODE & 0xFFFFFF;
     switch(gameCode) 
     {

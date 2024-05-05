@@ -7,6 +7,7 @@
 #include "decompress.h"
 #include "load_save.h"
 #include "overworld.h"
+#include "pokemon_rom_resource.h"
 #include "pokemon_storage_system.h"
 #include "main.h"
 #include "trainer_hill.h"
@@ -53,8 +54,8 @@ struct
 {
     u16 offset;
     u16 size;
-} static const sSaveSlotLayout[NUM_SECTORS_PER_SLOT] =
-{
+}
+static sSaveSlotLayout[NUM_SECTORS_PER_SLOT] = {
     SAVEBLOCK_CHUNK(struct SaveBlock2, 0), // SECTOR_ID_SAVEBLOCK2
 
     SAVEBLOCK_CHUNK(struct SaveBlock1, 0), // SECTOR_ID_SAVEBLOCK1_START
@@ -688,6 +689,8 @@ static u16 CalculateChecksum(void *data, u16 size)
 
 static void UpdateSaveAddresses(void)
 {
+    sSaveSlotLayout[SECTOR_ID_SAVEBLOCK2].size = gRomHeader->saveBlock2Size;
+    sSaveSlotLayout[SECTOR_ID_SAVEBLOCK1_END].size = gRomHeader->saveBlock1Size % SECTOR_DATA_SIZE;
     int i = SECTOR_ID_SAVEBLOCK2;
     gRamSaveSectorLocations[i].data = (void *)(gSaveBlock2Ptr) + sSaveSlotLayout[i].offset;
     gRamSaveSectorLocations[i].size = sSaveSlotLayout[i].size;

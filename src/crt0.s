@@ -48,7 +48,10 @@ _init:
 	mov r0, #0x1f
 	msr cpsr_fc, r0
 	ldr sp, _020000F4 @=0x03007e60
-	bl PrepareBoot
+	adr r1, PrepareBoot
+	orr r1, r1, #0x01
+	mov lr, pc
+	bx r1
 	ldr r1, _020000FC @=INTR_VECTOR
 	adr r0, _intr
 	str r0, [r1]
@@ -147,3 +150,30 @@ _intr_ret: @ 0x02000210
 	bx lr
 	.align 2, 0
 	.pool
+
+    thumb_func_start PrepareBoot
+PrepareBoot:
+	push	{lr}
+	movs	r0, #128
+	lsls	r0, r0, #20
+	mov	r1, pc
+	cmp	r1, r0
+	bcc	1f
+	ldr	r1, begin
+	ldr	r3, end
+	subs	r3, r3, r1
+	lsrs	r2, r3, #31
+	adds	r2, r2, r3
+	lsls	r2, r2, #10
+	lsrs	r2, r2, #11
+	bl	CpuSet
+	ldr	r0, begin
+	bx	r0
+1:
+	pop	{r0}
+	bx	r0
+	.align 2, 0
+begin:
+	.word	__begin__
+end:
+	.word	__end__
