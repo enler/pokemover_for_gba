@@ -25,6 +25,8 @@ RAMSCRGEN := tools/ramscrgen/ramscrgen
 GBAFIX	:= tools/gbafix/gbafix
 GFX		:= tools/gbagfx/gbagfx
 PERL	:= perl
+BLZ		:= tools/blz/blz
+BLZFIX	:= tools/blz/fix.sh
 
 OBJ_DIR := build
 SUBDIRS := src data gflib
@@ -43,7 +45,7 @@ DATA_ASM_OBJS := $(DATA_ASM_SRCS:%.s=$(OBJ_DIR)/%.o)
 ALL_OBJS := $(ASM_OBJS) $(C_OBJS) $(DATA_ASM_OBJS)
 OBJS_REL := $(patsubst $(OBJ_DIR)/%,%,$(ALL_OBJS))
 
-TOOLDIRS := tools/gbafix tools/gbagfx tools/preproc tools/scaninc
+TOOLDIRS := tools/gbafix tools/gbagfx tools/preproc tools/scaninc tools/blz
 
 ASFLAGS	:= -mcpu=arm7tdmi
 CFLAGS	:= -Os -mthumb -mthumb-interwork -mabi=apcs-gnu -mtune=arm7tdmi -march=armv4t -fno-toplevel-reorder -Wno-pointer-to-int-cast -DMODERN=1 -Wno-multichar
@@ -119,6 +121,9 @@ $(GFLIB): $(GFLIB_C_OBJS)
 $(ROM): $(ELF)
 	$(OBJCOPY) -O binary $< $@
 	$(GBAFIX) $@ --silent
+	@echo "compress with blz"
+	@$(BLZ) -en9 $@ 1>/dev/null
+	@bash $(BLZFIX) $@ $(shell $(OBJDUMP) -t $< | grep -w 'Bottom' | awk '{print $$1}')
 
 $(SYM): $(ELF)
 	$(OBJDUMP) -t $< | sort -u | grep -E "^0[2389]" | $(PERL) -p -e 's/^(\w{8}) (\w).{6} \S+\t(\w{8}) (\S+)$$/\1 \2 \3 \4/g' > $@

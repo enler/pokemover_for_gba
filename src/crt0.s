@@ -52,6 +52,8 @@ _init:
 	orr r1, r1, #0x01
 	mov lr, pc
 	bx r1
+    ldr r0, Bottom
+	bl DecompressBLZ
 	ldr r1, _020000FC @=INTR_VECTOR
 	adr r0, _intr
 	str r0, [r1]
@@ -65,6 +67,9 @@ _020000F4: .4byte 0x03007e60
 _020000F8: .4byte 0x03007fa0
 _020000FC: .4byte INTR_VECTOR
 _02000100: .4byte AgbMain
+    .global Bottom
+Bottom: 
+    .word 0
 
 	arm_func_start _intr
 _intr: @ 0x02000104
@@ -177,3 +182,52 @@ begin:
 	.word	__begin__
 end:
 	.word	__end__
+
+arm_func_start DecompressBLZ
+DecompressBLZ:
+	cmp	r0, #0
+	beq	exit
+	stmfd	sp!, {r4-r7}
+	ldmdb	r0, {r1-r2}
+	add	r2, r0, r2
+	sub	r3, r0, r1, LSR #24
+	bic	r1, r1, #0xff000000
+	sub	r1, r0, r1
+	mov	r4, r2
+loop:
+	cmp	r3, r1            // Exit if r3==r1
+	ble	end_loop
+	ldrb	r5, [r3, #-1]!       // r4 = compress_r5 = *--r3
+	mov	r6, #8
+loop8:
+	subs	r6, r6, #1
+	blt	loop
+	tst	r5, #0x80
+	bne	blockcopy
+bytecopy:
+	ldrb	r0, [r3, #-1]!
+	strb	r0, [r2, #-1]!      // Copy 1 byte
+	b	joinhere
+blockcopy:
+	ldrb	r12, [r3, #-1]!
+	ldrb	r7, [r3, #-1]!
+	orr	r7, r7, r12, LSL #8
+	bic	r7, r7, #0xf000
+	add	r7, r7, #0x0002
+	add	r12, r12, #0x0020
+patterncopy:
+	ldrb	r0, [r2, r7]
+	strb	r0, [r2, #-1]!
+	subs	r12, r12, #0x0010
+	bge	patterncopy
+
+joinhere:
+	cmp	r3, r1
+	mov	r5, r5, LSL #1
+	bgt	loop8
+end_loop:
+	
+	ldmfd	sp!, {r4-r7}
+exit:
+	bx	lr
+
