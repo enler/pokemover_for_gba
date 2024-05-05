@@ -43,6 +43,8 @@ DATA_ASM_OBJS := $(DATA_ASM_SRCS:%.s=$(OBJ_DIR)/%.o)
 ALL_OBJS := $(ASM_OBJS) $(C_OBJS) $(DATA_ASM_OBJS)
 OBJS_REL := $(patsubst $(OBJ_DIR)/%,%,$(ALL_OBJS))
 
+TOOLDIRS := tools/gbafix tools/gbagfx tools/preproc tools/scaninc
+
 ASFLAGS	:= -mcpu=arm7tdmi
 CFLAGS	:= -Os -mthumb -mthumb-interwork -mabi=apcs-gnu -mtune=arm7tdmi -march=armv4t -fno-toplevel-reorder -Wno-pointer-to-int-cast -DMODERN=1 -Wno-multichar
 CPPFLAGS:= -iquote include -iquote gflib -Wno-trigraphs -DMODERN=1
@@ -68,6 +70,10 @@ $(OBJ_DIR)/src/%.o: c_dep = $(shell $(SCANINC) -I include -I gflib $*.c)
 $(OBJ_DIR)/gflib/%.o: c_dep = $(shell $(SCANINC) -I include -I gflib $*.c)
 $(OBJ_DIR)/data/%.o: data_dep = $(shell $(SCANINC) -I include -I gflib $*.s)
 endif
+
+infoshell = $(foreach line, $(shell $1 | sed "s/ /__SPACE__/g"), $(info $(subst __SPACE__, ,$(line))))
+
+$(call infoshell, $(MAKE) -f make_tools.mk)
 
 all : $(ROM)
 	@:
@@ -112,11 +118,12 @@ $(GFLIB): $(GFLIB_C_OBJS)
 
 $(ROM): $(ELF)
 	$(OBJCOPY) -O binary $< $@
-	$(GBAFIX) $@ -p --silent
+	$(GBAFIX) $@ --silent
 
 $(SYM): $(ELF)
 	$(OBJDUMP) -t $< | sort -u | grep -E "^0[2389]" | $(PERL) -p -e 's/^(\w{8}) (\w).{6} \S+\t(\w{8}) (\S+)$$/\1 \2 \3 \4/g' > $@
 
 clean:
+	@$(foreach tooldir,$(TOOLDIRS),$(MAKE) clean -C $(tooldir);)
 	rm -rf build
 	find . \( -iname '*.1bpp' -o -iname '*.4bpp' -o -iname '*.8bpp' -o -iname '*.gbapal' -o -iname '*.lz' -o -iname '*.rl' -o -iname '*.latfont' -o -iname '*.hwjpnfont' -o -iname '*.fwjpnfont' \) -exec rm {} +
