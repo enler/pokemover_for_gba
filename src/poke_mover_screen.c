@@ -222,7 +222,7 @@ static const u8 gMsgInsertCart[] = _("请插入GBA宝可梦系列的游戏卡带
 static const u8 gTextDetectCart[] = _("正在检查游戏卡带，请稍候……");
 static const u8 gTextInvaildCart[] = _("游戏卡带不符合要求，\n"
                                        "请检查后重试。");
-static const u8 gTextInvaildSave[] = _("无法从游戏卡带中读取存档，\n"
+static const u8 gTextInvaildSave[] = _("无法从游戏卡带中读取记录，\n"
                                        "请检查后重试。");
 static const u8 gMsgAskForNext[] = _("请问你要做什么？");
 static const u8 gTextSendingTransferToolOption[] = _("发送传输工具");
@@ -2460,8 +2460,7 @@ static void CB2_PokeMover(void)
 
 static void CB2_ExitPokeMover(void)
 {
-//    gFieldCallback = FieldTask_ReturnToPcMenu;
-//    SetMainCallback2(CB2_ReturnToField);
+    DoSoftReset();
 }
 
 static void VBlankCB_PokeMover(void)
