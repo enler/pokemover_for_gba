@@ -3,6 +3,7 @@
 #include "mail.h"
 #include "palette.h"
 #include "pokemon_icon.h"
+#include "pokemon_rom_resource.h"
 #include "sprite.h"
 
 #define POKE_ICON_BASE_PAL_TAG 56000
@@ -1136,7 +1137,7 @@ void LoadMonIconPalettes(void)
 {
     u8 i;
     for (i = 0; i < ARRAY_COUNT(gMonIconPaletteTable); i++)
-        LoadSpritePalette(&gMonIconPaletteTable[i]);
+        LoadSpritePalette(&gRomHeader->monIconPalettes[i]);
 }
 
 // unused
@@ -1188,7 +1189,7 @@ void SpriteCB_MonIcon(struct Sprite *sprite)
 
 const u8 *GetMonIconTiles(u16 species, bool32 handleDeoxys)
 {
-    const u8 *iconSprite = gMonIconTable[species];
+    const u8 *iconSprite = gRomHeader->monIcons[species];
     if (species == SPECIES_DEOXYS && handleDeoxys == TRUE)
     {
         iconSprite = (const u8 *)(0x400 + (u32)iconSprite); // use the specific Deoxys form icon (Speed in this case)

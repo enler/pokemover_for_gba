@@ -20,5 +20,6 @@ u32 CalcPersonalityIdGBAUsual(struct PidGenerationParam *param);
 u32 CalcPersonalityIdGBAUnown(struct PidGenerationParam *param);
 u32 CalcPersonalityIdGameCube(struct PidGenerationParam *param);
 u8 CalcIVLsb(u8 hiddenPowerType);
+void SearchPatterns(u32 begin, u32 end, const void *patterns[], u32 patternNum, void *results[], u32 maxSearchWords);
 
 #endif

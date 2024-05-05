@@ -1,5 +1,6 @@
 #include "global.h"
 #include "bg.h"
+#include "cart_detect.h"
 #include "data.h"
 #include "define_gsc.h"
 #include "dma3.h"
@@ -20,6 +21,7 @@
 #include "pokedex.h"
 #include "pokemon_gsc.h"
 #include "pokemon_icon.h"
+#include "pokemon_rom_resource.h"
 #include "pokemon_storage_system.h"
 #include "save.h"
 #include "scanline_effect.h"
@@ -202,21 +204,12 @@ static bool8 CheckLocalBoxHasEnoughSpace();
 static s32 DoGSCBoxMonConversion(u8 localBox, struct BoxMonGSCBase *bases, u8 *convertedBoxMons);
 static void UpdatePokedex();
 
-extern u8 sPreviousBoxOption;
-
 extern const u32 sScrollingBg_Gfx[];
 extern const u32 sScrollingBg_Tilemap[];
 extern const u16 sScrollingBg_Pal[];
 
-extern u8 __vram_font_orig__[];
-extern u8 __vram_font_start__[];
-extern u8 __vram_font_end__[];
-
 extern const struct SpriteTemplate sSpriteTemplate_MonIcon;
 extern const struct SpriteTemplate sSpriteTemplate_BoxTitle;
-
-extern const struct Wallpaper sWallpapers[];
-extern const struct Wallpaper sWaldaWallpapers[];
 
 static struct PokeMoverContext *sPokeMoverContext;
 
@@ -224,6 +217,13 @@ static const u8 gMsgWelcomeForPokeMover[] = _("欢迎使用Pokémover For GBA。
                                               "你可以使用本工具\n"
                                               "将“宝可梦 金/银/水晶版”中的宝可梦\l"
                                               "传输到盒子里。\p");
+static const u8 gMsgInsertCart[] = _("请插入GBA宝可梦系列的游戏卡带，\n"
+                                     "插入卡带后按A键继续。\p");
+static const u8 gTextDetectCart[] = _("正在检查游戏卡带，请稍候……");
+static const u8 gTextInvaildCart[] = _("游戏卡带不符合要求，\n"
+                                       "请检查后重试。");
+static const u8 gTextInvaildSave[] = _("无法从游戏卡带中读取存档，\n"
+                                       "请检查后重试。");
 static const u8 gMsgAskForNext[] = _("请问你要做什么？");
 static const u8 gTextSendingTransferToolOption[] = _("发送传输工具");
 static const u8 gTextStartTransferOption[] = _("开始传输");
@@ -610,6 +610,8 @@ static const struct OamData sOamData_GSCHeroIcon =
     .affineParam = 0
 };
 
+static struct Wallpaper sWallpaer;
+
 static const struct BoxDataSource localBoxDataSource = {
     .maxRow = 5,
     .maxColumn = 6,
@@ -938,19 +940,30 @@ static void GetGSCBoxTitle(u8 box, u8 * boxTitle) {
 
 static const struct Wallpaper * GetLocalBoxWallpaper(u8 box, bool8 * isWaldaWallpaper) {
     u8 wallPaperId = gPokemonStoragePtr->boxWallpapers[box];
-    if (wallPaperId != 16) {
+    u8 waldaPatternId = GetWaldaWallpaperPatternId();
+    if (wallPaperId != 16)
+    {
         *isWaldaWallpaper = FALSE;
-        return &sWallpapers[wallPaperId];
+        sWallpaer.tiles = GetWallpaperTiles(wallPaperId, FALSE);
+        sWallpaer.tilemap = GetWallpaperTilemap(wallPaperId, FALSE);
+        sWallpaer.palettes = GetWallpaperPalette(wallPaperId, FALSE);
+        return &sWallpaer;
     }
     else {
         *isWaldaWallpaper = TRUE;
-        return &sWaldaWallpapers[GetWaldaWallpaperPatternId()];
+        sWallpaer.tiles = GetWallpaperTiles(waldaPatternId, TRUE);
+        sWallpaer.tilemap = GetWallpaperTilemap(waldaPatternId, TRUE);
+        sWallpaer.palettes = GetWallpaperPalette(waldaPatternId, TRUE);
+        return &sWallpaer;
     }
 }
 
 static const struct Wallpaper * GetGSCBoxWallpaper(u8 box, bool8 * isWaldaWallpaper) {
     *isWaldaWallpaper = FALSE;
-    return &sWallpapers[box];
+    sWallpaer.tiles = GetWallpaperTiles(box, FALSE);
+    sWallpaer.tilemap = GetWallpaperTilemap(box, FALSE);
+    sWallpaer.palettes = GetWallpaperPalette(box, FALSE);
+    return &sWallpaer;
 }
 
 static void CreateIncomingBoxMonIcon(u8 box, int direction) {
@@ -971,7 +984,7 @@ static void CreateIncomingBoxMonIcon(u8 box, int direction) {
                     incomingSpr = (struct IncomingSprite *)AllocZeroed(sizeof(struct IncomingSprite));
                     incomingSpr->priority = 2;
                     incomingSpr->subpriority = 19 - j;
-                    incomingSpr->paletteTag = sSpriteTemplate_MonIcon.paletteTag + gMonIconPaletteIndices[iconSpecies];
+                    incomingSpr->paletteTag = sSpriteTemplate_MonIcon.paletteTag + gRomHeader->monIconPaletteIds[iconSpecies];
                     incomingSpr->posX = 192 * direction + 100 + dataSource->leftBorder + dataSource->iconWidth * j;
                     incomingSpr->posY = 28 + dataSource->topBorder + dataSource->iconHeight * i;
                     incomingSpr->template = &sSpriteTemplate_MonIcon;
@@ -1032,7 +1045,7 @@ static void DrawBoxMonIcon(u8 box) {
             if (iconSpecies == 0)
                 continue;
             template = sSpriteTemplate_MonIcon;
-            template.paletteTag += gMonIconPaletteIndices[iconSpecies];
+            template.paletteTag += gRomHeader->monIconPaletteIds[iconSpecies];
             tileOffset = AllocSpriteTileOffset();
             if (tileOffset == -1)
                 break;
@@ -1131,7 +1144,7 @@ static void DrawLegalityViewMonIcon(s32 relativeIndex, struct LegalityCheckResul
     iconSpecies = GetIconSpecies(species, personality);
     if (relativeIndex >= 0 && relativeIndex < 3) {
         template = sSpriteTemplate_MonIcon;
-        template.paletteTag += gMonIconPaletteIndices[iconSpecies];
+        template.paletteTag += gRomHeader->monIconPaletteIds[iconSpecies];
         tileOffset = AllocSpriteTileOffset();
         if (tileOffset == -1)
             return;
@@ -1151,7 +1164,7 @@ static void DrawLegalityViewMonIcon(s32 relativeIndex, struct LegalityCheckResul
                 sPokeMoverContext->spriteMgr.incomingSprites[k] = (struct IncomingSprite *)AllocZeroed(sizeof(struct IncomingSprite));
                 sPokeMoverContext->spriteMgr.incomingSprites[k]->priority = 2;
                 sPokeMoverContext->spriteMgr.incomingSprites[k]->subpriority = 20;
-                sPokeMoverContext->spriteMgr.incomingSprites[k]->paletteTag = sSpriteTemplate_MonIcon.paletteTag + gMonIconPaletteIndices[iconSpecies];
+                sPokeMoverContext->spriteMgr.incomingSprites[k]->paletteTag = sSpriteTemplate_MonIcon.paletteTag + gRomHeader->monIconPaletteIds[iconSpecies];
                 sPokeMoverContext->spriteMgr.incomingSprites[k]->posX = 24;
                 sPokeMoverContext->spriteMgr.incomingSprites[k]->posY = relativeIndex * 48 + 20;
                 sPokeMoverContext->spriteMgr.incomingSprites[k]->template = &sSpriteTemplate_MonIcon;
@@ -2300,7 +2313,6 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
             FreeAllWindowBuffers();
             FREE_AND_SET_NULL(sPokeMoverContext);
             ExitLinkPokeMover();
-            sPreviousBoxOption = gTasks[taskId].tPokeStorageOption;
             ResetTasks();
             SetMainCallback2(CB2_ExitPokeMover);
             break;
@@ -2336,7 +2348,11 @@ static void Task_SetupPokeMover(u8 taskId)
             task->tState++;
             break;
         case 6:
-            ResetVramOamAndBgCntRegs();
+            SetGpuReg(REG_OFFSET_DISPCNT, 0);
+            SetGpuReg(REG_OFFSET_BG3CNT, 0);
+            SetGpuReg(REG_OFFSET_BG2CNT, 0);
+            SetGpuReg(REG_OFFSET_BG1CNT, 0);
+            SetGpuReg(REG_OFFSET_BG0CNT, 0);
             task->tState++;
             break;
         case 7:
@@ -2350,12 +2366,6 @@ static void Task_SetupPokeMover(u8 taskId)
             break;
         case 9:
             if (InitBGs(task)) {
-                if ((u32)__vram_font_end__ > OBJ_VRAM0) {
-                    RequestDma3Copy(__vram_font_orig__, __vram_font_start__, OBJ_VRAM0 - (u32)__vram_font_start__, 0);
-                    RequestDma3Copy(&__vram_font_orig__[OBJ_VRAM0 - (u32)__vram_font_start__], (u8*)OBJ_VRAM0, (u32)__vram_font_end__ - OBJ_VRAM0, 0);
-                }
-                else
-                    RequestDma3Copy(__vram_font_orig__, __vram_font_start__, __vram_font_end__ - __vram_font_start__, 0);
                 sPokeMoverContext->boxView.state = 0;
                 task->tState++;
             }
@@ -2381,11 +2391,44 @@ static void Task_SetupPokeMover(u8 taskId)
             task->tState++;
             break;
         case 15:
-            if (HandleMessage())
-            {
-                task->tState = 0;
-                gTasks[taskId].func = Task_HandlePokeMoverMenu;
+            if (HandleMessage()) {
+                FillWindowPixelBuffer(0, PIXEL_FILL(1));
+                DrawMessage(gMsgInsertCart, 2);
+                task->tState++;
             }
+            break;
+        case 16:
+            if (HandleMessage()) {
+                FillWindowPixelBuffer(0, PIXEL_FILL(1));
+                DrawText(0, gTextDetectCart, 0, 0, NULL, TRUE);
+                task->tState++;
+            }
+            break;
+        case 17:
+            //TODO detect cart
+            if (DetectCart())
+                task->tState += 2;
+            else {
+                FillWindowPixelBuffer(0, PIXEL_FILL(1));
+                DrawDelayedMessage(0, gTextInvaildCart, 180);
+                task->tState++;
+            }
+            break;
+        case 18:
+            if (HandleDelayedMessage(A_BUTTON | B_BUTTON)) {
+                FillWindowPixelBuffer(0, PIXEL_FILL(1));
+                DrawMessage(gMsgInsertCart, 2);
+                task->tState = 16;
+            }
+            break;
+        case 19:
+            //TODO detect save
+            break;
+        case 20:
+            break;
+        case 255:
+            task->tState = 0;
+            gTasks[taskId].func = Task_HandlePokeMoverMenu;
             break;
     }
 }

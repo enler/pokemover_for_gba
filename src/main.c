@@ -10,11 +10,12 @@
 #include "text.h"
 #include "text_ext.h"
 
-extern u8 gHeapEnd[];
+#define _Static_assert(expr, msg)
 
-extern u8 __data_orig__[];
-extern u8 __data_start__[];
-extern u8 __data_end__[];
+extern u8 gHeapEnd[];
+extern u8 __vram_font_orig__[];
+extern u8 __vram_font_start__[];
+extern u8 __vram_font_end__[];
 
 static void VBlankIntr(void);
 static void HBlankIntr(void);
@@ -54,8 +55,8 @@ u16 gKeyRepeatStartDelay;
 void AgbMain()
 {
     REG_IME = 0;
-    RegisterRamReset(RESET_ALL);
-    memcpy(__data_start__, __data_orig__, __data_end__ - __data_start__);
+    RegisterRamReset(~RESET_EWRAM & 0xFF);
+    CpuCopy16(__vram_font_orig__, __vram_font_start__, __vram_font_end__ - __vram_font_start__);
     InitHeap(gHeap, gHeapEnd - gHeap);
 
     REG_WAITCNT = WAITCNT_PREFETCH_ENABLE | WAITCNT_WS0_S_1 | WAITCNT_WS0_N_3;

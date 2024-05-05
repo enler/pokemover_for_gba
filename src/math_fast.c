@@ -155,3 +155,41 @@ u8 CalcIVLsb(u8 hiddenPowerType) {
     } while (hiddenPowerType != result * 15 / 63);
     return result;
 }
+
+void SearchPatterns(u32 begin, u32 end, const void * patterns[], u32 patternNum, void* results[], u32 maxSearchWords) {
+    u32 *romPtr = (u32*)begin;
+    u32 value;
+    const void **patternsPtr;
+    u32 *patternPtr;
+    void **resultPtr;
+    for (int i = 0; begin + i < end && patternNum; i++) {
+        value = *(romPtr + i);
+        patternsPtr = patterns;
+        resultPtr = results;
+        while (*patternsPtr) {
+            if (*resultPtr == NULL) {
+                patternPtr = (u32*)*patternsPtr;
+                if (value == *patternPtr) {
+                    if (maxSearchWords == 1) {
+                        *resultPtr = romPtr + i;
+                        break;
+                    }
+                    else {
+                        bool8 matched = TRUE;
+                        for (int j = 1; j < maxSearchWords && matched; j++) {
+                            matched = matched && patternPtr[j] == *(romPtr + i + j);
+                        }
+                        if (matched) {
+                            *resultPtr = romPtr + i;
+                            break; 
+                        }
+                    }
+                }
+            }
+            patternsPtr++;
+            resultPtr++;
+        }
+        if (*resultPtr)
+            patternNum--;
+    }
+}

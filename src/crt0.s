@@ -48,6 +48,7 @@ _init:
 	mov r0, #0x1f
 	msr cpsr_fc, r0
 	ldr sp, _020000F4 @=0x03007e60
+	bl PrepareBoot
 	ldr r1, _020000FC @=INTR_VECTOR
 	adr r0, _intr
 	str r0, [r1]

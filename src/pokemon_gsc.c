@@ -5,6 +5,7 @@
 #include "overworld.h"
 #include "pokemon.h"
 #include "pokemon_gsc.h"
+#include "pokemon_rom_resource.h"
 #include "string_util.h"
 #include "string_util_gsc.h"
 #include "random.h"
@@ -319,15 +320,15 @@ static inline u32 QueryGSCBoxMonData(struct BoxPokemonGSC * mon, s32 field)
 static u8 GetGSCBoxMonGender(struct BoxPokemonGSC * mon) {
     u8 species = QueryGSCBoxMonData(mon, MON_DATA_SPECIES);
     u8 vals;
-    switch (gSpeciesInfo[species].genderRatio)
+    switch (gRomHeader->baseStats[species].genderRatio)
     {
         case MON_MALE:
         case MON_FEMALE:
         case MON_GENDERLESS:
-            return gSpeciesInfo[species].genderRatio;
+            return gRomHeader->baseStats[species].genderRatio;
     }
     vals = (QueryGSCBoxMonData(mon, MON_DATA_ATK_IV) << 4) | QueryGSCBoxMonData(mon, MON_DATA_SPEED_IV);
-    if (vals > gSpeciesInfo[species].genderRatio) 
+    if (vals > gRomHeader->baseStats[species].genderRatio) 
         return MON_MALE;
     else 
         return MON_FEMALE;
@@ -650,13 +651,13 @@ static void CreateBoxMonFromGSC(struct BoxPokemon *boxMon, u16 species, u8 level
     SetBoxMonData(boxMon, MON_DATA_CHECKSUM, &checksum);
     EncryptBoxMon(boxMon);
     SetBoxMonData(boxMon, MON_DATA_SPECIES, &species);
-    SetBoxMonData(boxMon, MON_DATA_EXP, &gExperienceTables[gSpeciesInfo[species].growthRate][level]);
+    SetBoxMonData(boxMon, MON_DATA_EXP, &gRomResource->experienceTables[gRomHeader->baseStats[species].growthRate][level]);
 
-    value = GetCurrentRegionMapSectionId();
+    value = gRomResource->Overworld_GetMapHeaderByGroupAndId(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum)->regionMapSectionId;
     SetBoxMonData(boxMon, MON_DATA_MET_LOCATION, &value);
     SetBoxMonData(boxMon, MON_DATA_MET_GAME, &gGameVersion);
 
-    if (gSpeciesInfo[species].abilities[1])
+    if (gRomHeader->baseStats[species].abilities[1])
     {
         value = fixedPersonality & 1;
         SetBoxMonData(boxMon, MON_DATA_ABILITY_NUM, &value);
@@ -693,7 +694,7 @@ bool8 ConvertEgglessBoxMonFromGSC(struct BoxPokemon *boxMon, struct BoxPokemonGS
     param.otIdLo = template->extTemplate != NULL ? template->extTemplate->otId : QueryGSCBoxMonData(boxMonGSC, MON_DATA_OT_ID);
     param.otIdHi = 0;
     param.nature = GetGSCBoxMonNature(boxMonGSC);
-    param.genderThreshold = gSpeciesInfo[template->species].genderRatio;
+    param.genderThreshold = gRomHeader->baseStats[template->species].genderRatio;
     gender = GetGSCBoxMonGender(boxMonGSC);
     param.isMaleOrGenderLess = gender == MON_MALE || gender == MON_GENDERLESS;
     param.unownLetter = GetGSCBoxMonUnownLetter(boxMonGSC);
@@ -821,7 +822,7 @@ bool8 ConvertEgglessBoxMonFromGSC(struct BoxPokemon *boxMon, struct BoxPokemonGS
     SetBoxMonData(boxMon, MON_DATA_POKERUS, &pokerus);
 
     if (template->metGameVer & F_VERSION_GAMECUBE) {
-        if (gSpeciesInfo[template->species].abilities[1] != ABILITY_NONE) {
+        if (gRomHeader->baseStats[template->species].abilities[1] != ABILITY_NONE) {
             SetBoxMonData(boxMon, MON_DATA_ABILITY_NUM, &param.abilityNum);
         }
     }
@@ -854,7 +855,7 @@ bool8 ConvertBoxMonFromGSC(struct BoxPokemon *boxMon, struct BoxPokemonGSC *boxM
     pokerus = QueryGSCBoxMonData(boxMonGSC, MON_DATA_POKERUS);
     ppBonuses = QueryGSCBoxMonData(boxMonGSC, MON_DATA_PP_BONUSES);
     param.rngValue = gRngValue;
-    param.genderThreshold = gSpeciesInfo[species].genderRatio;
+    param.genderThreshold = gRomHeader->baseStats[species].genderRatio;
     param.nature = GetGSCBoxMonNature(boxMonGSC);
     param.isShiny = IsGSCBoxMonShiny(boxMonGSC);
     gender = GetGSCBoxMonGender(boxMonGSC);
@@ -937,7 +938,7 @@ void MakeGSCBoxMonLegal(struct BoxPokemon *gscBoxMon, struct LegalityCheckResult
 
     if (level < legalityCheckResult->minimumLevel) {
         level = legalityCheckResult->minimumLevel;
-        SetBoxMonData(gscBoxMon, MON_DATA_EXP, &gExperienceTables[gSpeciesInfo[species].growthRate][level]);
+        SetBoxMonData(gscBoxMon, MON_DATA_EXP, &gRomResource->experienceTables[gRomHeader->baseStats[species].growthRate][level]);
     }
 
     memset(ppBonusBuff, 0, sizeof(ppBonusBuff));
