@@ -11,7 +11,23 @@ static u32 gBppConvTable[256];
 static const u8 gCHSFont1bpp[] = INCBIN_U8("graphics/fonts/gba_chs_font_11x11.bin");
 static const u8 gCHSFont1bppExt[] __attribute__((section(".vramfont"))) = INCBIN_U8("graphics/fonts/gba_chs_font_11x11_tail.bin");
 static const u8 gLatinFont1bpp[] = INCBIN_U8("graphics/fonts/gba_latin_font_8x16.bin");
-static const u8 gLatinFont1bppWidthTable[] = INCBIN_U8("graphics/fonts/gba_latin_font_8x16_width_table.bin");
+static const u8 gLatinFont1bppWidthTable[] = {
+    3,  6,  6,  6,  6,  6,  6,  6,  6,  6,  3,  6,  6,  6,  6,  6,
+    8,  6,  6,  6,  6,  6,  6,  6,  3,  6,  6,  6,  6,  6,  6,  3,
+    6,  6,  6,  6,  6,  8,  6,  6,  6,  6,  6,  6,  9,  7,  6,  3,
+    3,  3,  3,  3, 10,  8,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+    3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+    6,  6,  4,  8,  8,  8,  7,  8,  8,  4,  6,  6,  4,  4,  3,  3,
+    3,  3,  3,  3,  3,  3,  3,  3,  6,  3,  3,  3,  3,  3,  3,  6,
+    3,  3,  3,  3,  3,  3,  3,  6,  3,  7,  7,  7,  7,  1,  2,  3,
+    4,  5,  6,  7,  6,  6,  6,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+    3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+    8,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  4,  6,  3,  6,  3,
+    6,  6,  6,  3,  3,  6,  6,  6,  3,  7,  6,  6,  6,  6,  6,  6,
+    6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
+    6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  4,  5,  6,
+    4,  6,  6,  6,  6,  6,  5,  6,  6,  6,  6,  6,  6,  6,  6,  8,
+    3,  6,  6,  6,  6,  6,  6,  3,  3,  3,  3,  3,  3,  3,  3,  3};
 static const u8 gJPNFont1bpp[] = INCBIN_U8("graphics/fonts/gba_jpn_font_8x16.bin");
 static const u8 sDownArrowTiles[] = INCBIN_U8("graphics/fonts/down_arrow.4bpp");
 static const u8 sDownArrowYCoords[] = { 0, 1, 2, 1 };
@@ -60,31 +76,8 @@ static u8 DrawGlyph(u8 windowId, const u8 *glyph, u8 left, u8 top, u8 width, con
     }
 }
 
-// size of dest must be 32 bytes
-static void ConvertNarrowGlyph(const u8 *glyphBuff, u8 *dest) {
-    memset(dest, 0, 32);
-    for (int i = 0; i < GLYPH_HEIGHT; i++)
-    {
-        dest[i] = glyphBuff[i];
-    }
-    u8 *shadowBuff = dest + 16;
-    glyphBuff = dest;
-    u8 line = glyphBuff[0];
-    u8 lineNextShadow = 0;
-    for (int i = 0; i < GLYPH_HEIGHT - 1; i++)
-    {
-        u8 lineNext = glyphBuff[i + 1];
-        u8 lineShadow = (line >> 1) | line;
-        u8 shadow = ((lineShadow ^ line) | lineNextShadow);
-        shadowBuff[i] = shadow;
-        lineNextShadow = (lineShadow | lineNext) ^ lineNext;
-        line = lineNext;
-    }
-    shadowBuff[GLYPH_HEIGHT - 1] = lineNextShadow;
-}
-
 // size of dest must be 64 bytes
-static void ConvertWideGlyph(const u8 *source, u8 *dest, int glyphBoxWidth, int glyphBoxHeight, int xOffset)
+static void ConvertGlyph(const u8 *source, u8 *dest, int glyphBoxWidth, int glyphBoxHeight, int xOffset)
 {
   int index = 0;
   int remainBitCount = 8;
@@ -234,7 +227,7 @@ static bool8 HandleDrawingText() {
                         else
                             glyphPtr = &gCHSFont1bppExt[(glyphIdx - sizeof(gCHSFont1bpp) / 16) * 16];
                         width = glyphPtr[15] & 0xF;
-                        ConvertWideGlyph(glyphPtr, glyphBuff, 11, 11, 2);
+                        ConvertGlyph(glyphPtr, glyphBuff, 11, 11, 2);
                         if (width > 8)
                         {
                             DrawGlyph(sTextDrawingContext.windowId, glyphBuff, sTextDrawingContext.left, sTextDrawingContext.top, 8, &sTextDrawingContext.bgColor);
@@ -250,14 +243,20 @@ static bool8 HandleDrawingText() {
                 }
             default:
                 glyphPtr = sTextDrawingContext.currNarrowFont + currChar * 16;
-                ConvertNarrowGlyph(glyphPtr, glyphBuff);
+                ConvertGlyph(glyphPtr, glyphBuff, 8, 16, 0); 
                 if (sTextDrawingContext.isJpnChar) {
                     width = 8;
                 }
                 else {
                     width = gLatinFont1bppWidthTable[currChar];
                 }
-                DrawGlyph(sTextDrawingContext.windowId, glyphBuff, sTextDrawingContext.left, sTextDrawingContext.top, width, &sTextDrawingContext.bgColor);
+                if (width > 8) {
+                    DrawGlyph(sTextDrawingContext.windowId, glyphBuff, sTextDrawingContext.left, sTextDrawingContext.top, 8, &sTextDrawingContext.bgColor);
+                    DrawGlyph(sTextDrawingContext.windowId, &glyphBuff[32], sTextDrawingContext.left + 8, sTextDrawingContext.top, width - 8, &sTextDrawingContext.bgColor);
+                }
+                else {
+                    DrawGlyph(sTextDrawingContext.windowId, glyphBuff, sTextDrawingContext.left, sTextDrawingContext.top, width, &sTextDrawingContext.bgColor);
+                }
                 sTextDrawingContext.left += width;
                 break;
             }
