@@ -226,13 +226,13 @@ static const struct EggLessPokemonTemplate * const sEggLessPokemonTemplates[] = 
     &monTemplateCELEBI
 };
 
-extern const u8 gBase_fixed_moves_table[];
-extern const u8 gBreeding_moves_table[];
-extern const u8 gBreeding_shared_table[];
-extern const u8 gEvo_reverse_table[];
-extern const u8 gExternal_fixed_moves_table[];
-extern const u8 gLevel_up_moves_table[];
-extern const u8 gMinimum_levels[];
+static const u8 gBase_fixed_moves_table[] = INCBIN_U8("data/legality/base_fixed_moves_table.bin");
+static const u8 gBreeding_moves_table[] = INCBIN_U8("data/legality/breeding_moves_table.bin");
+static const u8 gBreeding_shared_table[] = INCBIN_U8("data/legality/breeding_shared_table.bin");
+static const u8 gEvo_reverse_table[] = INCBIN_U8("data/legality/evo_reverse_table.bin");
+static const u8 gExternal_fixed_moves_table[] = INCBIN_U8("data/legality/external_fixed_moves_table.bin");
+static const u8 gLevel_up_moves_table[] = INCBIN_U8("data/legality/level_up_moves_table.bin");
+static const u8 gMinimum_levels[] = INCBIN_U8("data/legality/minimum_levels.bin");
 
 static s32 BinarySearch(const u8 arr[], s32 n, u8 target) {
     s32 left = 0;
