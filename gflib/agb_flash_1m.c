@@ -44,6 +44,8 @@ u16 IdentifyFlash(void)
     WaitForFlashWrite = (*setupInfo)->WaitForFlashWrite;
     gFlashMaxTime = (*setupInfo)->maxTime;
     gFlash = &(*setupInfo)->type;
+    ReadFlash = ReadFlashImpl;
+    ProgramFlashSectorAndVerify = ProgramFlashSectorAndVerifyImpl;
 
     return result;
 }

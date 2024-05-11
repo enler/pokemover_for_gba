@@ -97,4 +97,6 @@ extern u32 WriteSramEx(const u8 *src, u8 *dst, u32 size) ;
                       Verify error => Error address on device side 
 */
 
+bool8 IdentifySram();
+
 #endif // GUARD_AGB_SRAM_H

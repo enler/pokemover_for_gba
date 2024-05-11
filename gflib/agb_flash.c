@@ -15,6 +15,8 @@ u16 (*ProgramFlashByte)(u16 sectorNum, u32 offset, u8 data);
 u16 gFlashNumRemainingBytes;
 u16 (*EraseFlashChip)();
 u16 (*EraseFlashSector)(u16 sectorNum);
+void (*ReadFlash)(u16 sectorNum, u32 offset, u8 *dest, u32 size);
+u32 (*ProgramFlashSectorAndVerify)(u16 sectorNum, u8 *src);
 const u16 *gFlashMaxTime;
 
 void SetReadFlash1(u16 *dest);
@@ -136,7 +138,7 @@ void ReadFlash_Core(vu8 *src, u8 *dest, u32 size)
     }
 }
 
-void ReadFlash(u16 sectorNum, u32 offset, u8 *dest, u32 size)
+void ReadFlashImpl(u16 sectorNum, u32 offset, u8 *dest, u32 size)
 {
     u8 *src;
     u16 i;
@@ -157,7 +159,7 @@ void ReadFlash(u16 sectorNum, u32 offset, u8 *dest, u32 size)
     funcSrc = (vu16 *)((s32)funcSrc ^ 1);
     funcDest = readFlash_Core_Buffer;
 
-    i = ((s32)ReadFlash - (s32)ReadFlash_Core) >> 1;
+    i = ((s32)ReadFlashImpl - (s32)ReadFlash_Core) >> 1;
 
     while (i != 0)
     {
@@ -257,7 +259,7 @@ u32 VerifyFlashSectorNBytes(u16 sectorNum, u8 *src, u32 n)
     return verifyFlashSector_Core(src, tgt, n);
 }
 
-u32 ProgramFlashSectorAndVerify(u16 sectorNum, u8 *src)
+u32 ProgramFlashSectorAndVerifyImpl(u16 sectorNum, u8 *src)
 {
     u8 i;
     u32 result;

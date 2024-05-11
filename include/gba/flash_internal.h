@@ -50,6 +50,8 @@ extern u16 (*ProgramFlashSector)(u16, u8 *);
 extern u16 (*EraseFlashChip)(void);
 extern u16 (*EraseFlashSector)(u16);
 extern u16 (*WaitForFlashWrite)(u8, u8 *, u8);
+extern void (*ReadFlash)(u16 sectorNum, u32 offset, u8 *dest, u32 size);
+extern u32 (*ProgramFlashSectorAndVerify)(u16 sectorNum, u8 *src);
 extern const u16 *gFlashMaxTime;
 extern const struct FlashType *gFlash;
 
@@ -65,7 +67,9 @@ u16 ReadFlashId(void);
 void StartFlashTimer(u8 phase);
 void SetReadFlash1(u16 *dest);
 void StopFlashTimer(void);
-void ReadFlash(u16 sectorNum, u32 offset, u8 *dest, u32 size);
+void ReadFlashImpl(u16 sectorNum, u32 offset, u8 *dest, u32 size);
+u32 ProgramFlashSectorAndVerifyImpl(u16 sectorNum, u8 *src);
+
 
 u16 WaitForFlashWrite_Common(u8 phase, u8 *addr, u8 lastData);
 

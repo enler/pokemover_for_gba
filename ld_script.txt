@@ -8,9 +8,9 @@ SECTIONS {
         src/libagbsyscall.o(.text);
         src/*.o(.text);
         gflib.a:agb_flash.o(.text.FlashTimerIntr);
-        gflib.a:agb_flash.o(.text.ProgramFlashSectorAndVerify);
+        gflib.a:agb_flash.o(.text.ProgramFlashSectorAndVerifyImpl);
         gflib.a:agb_flash.o(.text.ReadFlash_Core);
-        gflib.a:agb_flash.o(.text.ReadFlash);
+        gflib.a:agb_flash.o(.text.ReadFlashImpl);
         gflib.a:agb_flash.o(.text.ReadFlashId);
         gflib.a:agb_flash.o(.text.SetFlashTimerIntr);
         gflib.a:agb_flash.o(.text.ReadFlash1);
@@ -87,8 +87,6 @@ SECTIONS {
         gflib.a:menu.o(.text.ClearStdWindowAndFrame);
         gflib.a:menu.o(.text.ClearStdWindowAndFrameToTransparent);
         gflib.a:menu.o(.text.CreateYesNoMenu);
-        gflib.a:menu.o(.text.DecompressAndCopyTileDataToVram);
-        gflib.a:menu.o(.text.DecompressAndLoadBgGfxUsingHeap);
         gflib.a:menu.o(.text.DoScheduledBgTilemapCopiesToVram);
         gflib.a:menu.o(.text.DrawDialogueFrame);
         gflib.a:menu.o(.text.DrawStdFrameWithCustomTileAndPalette);
@@ -116,9 +114,7 @@ SECTIONS {
         gflib.a:menu.o(.text.WindowFunc_DrawDialogueFrame)
         gflib.a:menu.o(.text.WindowFunc_DrawStandardFrame)
         gflib.a:menu.o(.text.WindowFunc_DrawStdFrameWithCustomTileAndPalette)
-        gflib.a:menu.o(.text.copy_decompressed_tile_data_to_vram)
         gflib.a:menu.o(.text.malloc_and_decompress)
-        gflib.a:menu.o(.text.task_free_buf_after_copying_tile_data_to_vram)
         gflib.a:menu_helpers.o(.text.ResetAllBgsCoordinates);
         gflib.a:menu_helpers.o(.text.SetVBlankHBlankCallbacksToNull);
         gflib.a:pokedex.o(.text.GetSetPokedexFlag);
@@ -331,6 +327,8 @@ SECTIONS {
         gflib.a:agb_flash.o(.bss.ProgramFlashByte);
         gflib.a:agb_flash.o(.bss.ProgramFlashSector);
         gflib.a:agb_flash.o(.bss.WaitForFlashWrite);
+        gflib.a:agb_flash.o(.bss.ReadFlash);
+        gflib.a:agb_flash.o(.bss.ProgramFlashSectorAndVerify);
         gflib.a:agb_flash.o(.bss.gFlash);
         gflib.a:agb_flash.o(.bss.gFlashNumRemainingBytes);
         gflib.a:agb_flash.o(.bss.gFlashMaxTime);

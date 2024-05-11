@@ -22,7 +22,6 @@ static void HBlankIntr(void);
 static void VCountIntr(void);
 static void SerialIntr(void);
 static void IntrDummy(void);
-static void ReadKeys(void);
 
 u32 gBattleTypeFlags = 0;
 
@@ -120,7 +119,7 @@ void DoSoftReset(void)
     DmaStop(1);
     DmaStop(2);
     DmaStop(3);
-    SoftReset(RESET_ALL);
+    SoftReset(0);
 }
 
 void InitKeys(void)
@@ -135,7 +134,7 @@ void InitKeys(void)
     gMain.newKeysRaw = 0;
 }
 
-static void ReadKeys(void)
+void ReadKeys(void)
 {
     u16 keyInput = REG_KEYINPUT ^ KEYS_MASK;
     gMain.newKeysRaw = keyInput & ~gMain.heldKeysRaw;
