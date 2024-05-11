@@ -88,16 +88,16 @@ static void ConvertGlyph(const u8 *source, u8 *dest, int glyphBoxWidth, int glyp
   // step 1 convert 11x11-glyph to 16x16-glyph
   while (index < glyphBoxHeight)
   {
-    int rightShift = remainBitCount - (glyphBoxWidth - bitOffset) > 0 ? remainBitCount - (glyphBoxWidth - bitOffset) : 0;
-    int bitsLength = (remainBitCount - rightShift);
-    int leftShift = 16 - bitOffset - bitsLength;
-    temp = (*source >> rightShift << leftShift) | temp;
-    bitOffset += bitsLength;
-    remainBitCount -= bitsLength;
-    if (remainBitCount == 0)
-    {
-      remainBitCount = 8;
-      source++;
+      int rightShift = max(remainBitCount - (glyphBoxWidth - bitOffset), 0);
+      int bitsLength = (remainBitCount - rightShift);
+      int leftShift = 16 - bitOffset - bitsLength;
+      temp = (*source >> rightShift << leftShift) | temp;
+      bitOffset += bitsLength;
+      remainBitCount -= bitsLength;
+      if (remainBitCount == 0)
+      {
+          remainBitCount = 8;
+          source++;
     }
     if (bitOffset == glyphBoxWidth)
     {

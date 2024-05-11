@@ -4,6 +4,7 @@
 #include "data.h"
 #include "define_gsc.h"
 #include "dma3.h"
+#include "event_data.h"
 #include "gpu_regs.h"
 #include "graphics.h"
 #include "international_string_util.h"
@@ -23,8 +24,10 @@
 #include "pokemon_icon.h"
 #include "pokemon_rom_resource.h"
 #include "pokemon_storage_system.h"
+#include "random.h"
 #include "save.h"
 #include "scanline_effect.h"
+#include "save_variables.h"
 #include "strings.h"
 #include "string_util.h"
 #include "string_util_gsc.h"
@@ -62,6 +65,8 @@
 #define BOTTOM_HINT_HEIGHT 2
 
 #define DecompressAndLoadBgGfxDirectly(src, offset) LZ77UnCompVram(src, (u8*)VRAM + (offset) * TILE_SIZE_4BPP)
+#define FLAG_GET(id) ((gSaveFlags[(id) / 8] >> ((id) % 8)) & 1)
+#define FLAG_SET(id) gSaveFlags[(id) / 8] |= (1 << ((id) % 8))
 
 struct Wallpaper
 {
@@ -1418,7 +1423,7 @@ static bool8 HandleSendingTransferToolToGBA(struct Task * task) {
         case 1:
             ptr = (u8*)GetWordTaskArg(0, 4);
             size = GetWordTaskArg(0, 6);
-            if (multiboot_normal(ptr, ptr + size) == MB_SUCCESS)
+            if (multiboot_normal(ptr, ptr + ((size + 0xF) & ~0xF)) == MB_SUCCESS)
                 task->tSubState++;
             else
                 task->tSubState += 2;
@@ -2405,6 +2410,7 @@ static void Task_SetupPokeMover(u8 taskId)
             break;
         case 15:
             if (HandleMessage()) {
+                REG_TM1CNT_H = TIMER_ENABLE;
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
                 DrawMessage(gMsgInsertCart, 2);
                 task->tState++;
@@ -2445,6 +2451,8 @@ static void Task_SetupPokeMover(u8 taskId)
             }
             break;
         case 20:
+            gRngValue = REG_TM1CNT_L;
+            REG_TM1CNT_H = 0;
             task->tState = 0;
             gTasks[taskId].func = Task_HandlePokeMoverMenu;
             break;
@@ -2453,6 +2461,7 @@ static void Task_SetupPokeMover(u8 taskId)
 
 static void CB2_PokeMover(void)
 {
+    Random();
     RunTasks();
     BuildOamBuffer();
     DoScheduledBgTilemapCopiesToVram();
@@ -2592,6 +2601,7 @@ static void UpdatePokedex() {
     struct BoxPokemon *mon;
     u16 species;
     u32 personality;
+    bool8 isRubySapp;
     for (i = 0; i < sPokeMoverContext->checkResultNum; i++) {
         mon = &gPokemonStoragePtr->boxes[sPokeMoverContext->boxView.localBox][sPokeMoverContext->checkResults[i].boxMonIndex];
         species = GetBoxMonData(mon, MON_DATA_SPECIES, NULL);
@@ -2599,5 +2609,18 @@ static void UpdatePokedex() {
         species = SpeciesToNationalPokedexNum(species);
         GetSetPokedexFlag(species, FLAG_SET_SEEN);
         HandleSetPokedexFlag(species, FLAG_SET_CAUGHT, personality);
+    }
+    isRubySapp = gRomHeader->version == VERSION_RUBY || gRomHeader->version == VERSION_SAPPHIRE;
+    if (isRubySapp)
+        EnableNationalPokedex();
+}
+
+void EnableNationalPokedex(void) {
+    if (gPokedex->nationalMagic != 0xDA && gSaveVars[gRomHeader->pokedexVar] != 0x302 && FLAG_GET(gRomHeader->pokedexFlag) == 0) {
+        gPokedex->nationalMagic = 0xDA;
+        gSaveVars[gRomHeader->pokedexVar] = 0x302;
+        FLAG_SET(gRomHeader->pokedexFlag);
+        gPokedex->mode = DEX_MODE_NATIONAL;
+        gPokedex->order = 0;
     }
 }

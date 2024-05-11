@@ -1674,7 +1674,7 @@ bool8 SearchResource() {
 }
 
 void SetRomHeaderForRS() {
-    const u8 langChars[] = {'J', 'E', 'E', 'D', 'F', 'S', 'I'};
+    static const u8 langChars[] = {'J', 'E', 'E', 'D', 'F', 'S', 'I'};
     u32 gameCode = ROM_GAME_CODE & 0xFFFFFF;
     u8 langChar = ROM_GAME_CODE >> 24;
     u8 langIdx = 0;
