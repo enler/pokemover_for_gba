@@ -315,6 +315,7 @@ static inline u32 QueryGSCBoxMonData(struct BoxPokemonGSC * mon, s32 field)
         case MON_DATA_LEVEL:
             return mon->level;
     }
+    return 0;
 }
 
 static u8 GetGSCBoxMonGender(struct BoxPokemonGSC * mon) {
@@ -555,6 +556,7 @@ static void DetectGameVerAndLanguage(const u8 *nickName, const u8 *otName, u8 *g
     u8 origGameVer, origLanguage, namePos;
     if (*language == LANGUAGE_JAPANESE)
         return;
+    namePos = 0;
     while (otName[namePos] != 0x50) namePos++;
     if (namePos > 7) {
         *gameVer = VERSION_GOLD;
@@ -665,7 +667,7 @@ static void CreateBoxMonFromGSC(struct BoxPokemon *boxMon, u16 species, u8 level
 }
 
 bool8 ConvertEgglessBoxMonFromGSC(struct BoxPokemon *boxMon, struct BoxPokemonGSC *boxMonGSC, u8 * origNickName, u8 * origOtName, u8 otGender, u8 gameVer, u8 language, struct LegalityCheckResult * legalityCheckResult) {
-    u8 level, abilityNum, moves[MAX_MON_MOVES], *movePtr, ppBonuses, ppBonusBuff[MAX_MON_MOVES], *ppBonusPtr, 
+    u8 level, moves[MAX_MON_MOVES], *movePtr, ppBonuses, ppBonusBuff[MAX_MON_MOVES], *ppBonusPtr, 
        gender, friendship, pokerus, metGameVer, iv, nameLanguage,
        nickName[POKEMON_NAME_LENGTH + 1], otName[PLAYER_NAME_LENGTH + 1];
     u16 move;

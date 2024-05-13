@@ -627,7 +627,7 @@ u16 IdentifyInvalidNameChars(u8 *str, size_t maxLen, u8 strLang, const u8 *origS
     u16 flag = 0;
     u16 chars[16], origChars[16];
     s32 i, j, left, right;
-    u8 hi, lo;
+    u8 hi;
     u16 charCode, origCharCode;
     if ((origGameVer == VERSION_GOLD || origGameVer == VERSION_SILVER) && origGameLang == LANGUAGE_KOREAN)
         isGSKorean = TRUE;

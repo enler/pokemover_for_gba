@@ -56,7 +56,7 @@ struct TextDrawingContext {
 static struct TextDrawingContext sTextDrawingContext;
 
 // colors bg fg shadow
-static u8 DrawGlyph(u8 windowId, const u8 *glyph, u8 left, u8 top, u8 width, const u8 *colors) {
+static void DrawGlyph(u8 windowId, const u8 *glyph, u8 left, u8 top, u8 width, const u8 *colors) {
     struct Window *win = &gWindows[windowId];
     const u8 *shadow = glyph + 16;
     if (width > 8)
@@ -114,7 +114,7 @@ static void ConvertGlyph(const u8 *source, u8 *dest, int glyphBoxWidth, int glyp
   }
 
   // step 2 draw shadow
-  const u8 *glyphBuff = dest;
+  u8 *glyphBuff = dest;
   u8 *shadowBuff = dest + 32;
   u16 line = (glyphBuff[0] << 8) | glyphBuff[16];
   u16 lineNextShadow = 0;

@@ -1821,7 +1821,6 @@ static int HandleEraseBoxMon(u8 box, u8 *erasedIndices, u16 length)
 {
     u8 status = sPokeMoverContext->linkStatus.status;
     bool8 newDataReached = sPokeMoverContext->linkStatus.newDataReached;
-    u16 oldRecvSize;
     switch (sPokeMoverContext->linkStatus.state)
     {
         case 0:
@@ -2548,9 +2547,7 @@ static inline u8 * GetGSCBoxMonNickName(u8 position) {
 }
 
 static s32 DoGSCBoxMonConversion(u8 localBox, struct BoxMonGSCBase * bases, u8 * convertedBoxMons) {
-    u32 convertedCounter = 0;
-    u8 *otName, otGender,*nickName, total, gameVer, gameLang, *convertedBoxMonsAlt;
-    bool8 result;
+    u8 otGender, total, gameVer, gameLang, *convertedBoxMonsAlt;
     struct BoxPokemonGSC *boxMonGSC;
     struct BoxPokemon *boxMon;
     int i, j;
@@ -2584,9 +2581,9 @@ static s32 DoGSCBoxMonConversion(u8 localBox, struct BoxMonGSCBase * bases, u8 *
             if (GetBoxMonData(boxMon, MON_DATA_SPECIES_OR_EGG, NULL) == SPECIES_NONE) {
                 legalityCheckResult.boxMonIndex = j;
                 if (FindIndexIfGSCBoxMonIsEggless(boxMonGSC) >= 0)
-                    result = ConvertEgglessBoxMonFromGSC(boxMon, boxMonGSC, GetGSCBoxMonNickName(i), GetGSCBoxMonOTName(i), otGender, gameVer, gameLang, &legalityCheckResult);
+                    ConvertEgglessBoxMonFromGSC(boxMon, boxMonGSC, GetGSCBoxMonNickName(i), GetGSCBoxMonOTName(i), otGender, gameVer, gameLang, &legalityCheckResult);
                 else
-                    result = ConvertBoxMonFromGSC(boxMon, boxMonGSC, GetGSCBoxMonNickName(i), GetGSCBoxMonOTName(i), otGender, gameVer, gameLang, &legalityCheckResult);
+                    ConvertBoxMonFromGSC(boxMon, boxMonGSC, GetGSCBoxMonNickName(i), GetGSCBoxMonOTName(i), otGender, gameVer, gameLang, &legalityCheckResult);
                 sPokeMoverContext->checkResults[sPokeMoverContext->checkResultNum++] = legalityCheckResult;
                 *convertedBoxMons++ = i;
                 break;
