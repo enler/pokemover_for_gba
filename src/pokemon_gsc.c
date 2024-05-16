@@ -250,7 +250,7 @@ static s32 BinarySearch(const u8 arr[], s32 n, u8 target) {
     return -1;
 }
 
-static inline u32 QueryGSCBoxMonData(struct BoxPokemonGSC * mon, s32 field)
+static inline u32 __attribute__((always_inline)) QueryGSCBoxMonData(struct BoxPokemonGSC * mon, s32 field)
 {
     switch (field)
     {
