@@ -1314,8 +1314,21 @@ static bool8 DrawLeftViewOfBox(struct Task *task) {
             gStringVar3[1] = EXT_CTRL_CODE_JPN;
             DecodeGSCString(&gStringVar3[2], NAME_LENGTH_GSC_JP + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_JP + 1, sPokeMoverContext->baseData.gameVer, sPokeMoverContext->baseData.gameLang);
         }
-        else
-            DecodeGSCString(gStringVar3, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.gameVer, sPokeMoverContext->baseData.gameLang);
+        else {
+            if (((sPokeMoverContext->baseData.gameVer == VERSION_GOLD || sPokeMoverContext->baseData.gameVer == VERSION_SILVER) && sPokeMoverContext->baseData.gameLang == LANGUAGE_KOREAN) ||
+                (sPokeMoverContext->baseData.gameVer == VERSION_CRYSTAL && sPokeMoverContext->baseData.gameLang == LANGUAGE_CHINESE)) {
+                DecodeGSCString(gStringVar3, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.gameVer, sPokeMoverContext->baseData.gameLang);
+            }
+            else if (ContainsCrystalCHSChars(sPokeMoverContext->baseData.playerName)) {
+                DecodeGSCString(gStringVar3, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_INTL + 1, VERSION_CRYSTAL, LANGUAGE_CHINESE);
+            }
+            else if (ContainsGSCHSChars(sPokeMoverContext->baseData.playerName)) {
+                DecodeGSCString(gStringVar3, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_INTL + 1, VERSION_GOLD, LANGUAGE_KOREAN);
+            }
+            else {
+                DecodeGSCString(gStringVar3, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.playerName, NAME_LENGTH_GSC_INTL + 1, sPokeMoverContext->baseData.gameVer, sPokeMoverContext->baseData.gameLang);
+            }
+        }
         PutWindowTilemap(sPokeMoverContext->boxView.gscPlayerNameWinId);
         FillWindowPixelBuffer(sPokeMoverContext->boxView.gscPlayerNameWinId, PIXEL_FILL(0));
         DrawText(sPokeMoverContext->boxView.gscPlayerNameWinId, gStringVar3, 2, 3, colors, TRUE);
