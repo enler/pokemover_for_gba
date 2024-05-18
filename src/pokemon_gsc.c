@@ -718,6 +718,8 @@ bool8 ConvertEgglessBoxMonFromGSC(struct BoxPokemon *boxMon, struct BoxPokemonGS
     SetBoxMonData(boxMon, MON_DATA_POKEBALL, &fixedBall);
 
     // gender
+    if (template->metGameVer & F_VERSION_GAMECUBE)
+        otGender = MALE;
     SetBoxMonData(boxMon, MON_DATA_OT_GENDER, &otGender);
 
     DetectGameVerAndLanguage(origNickName, origOtName, &gameVer, &language);
