@@ -191,6 +191,7 @@ struct PokeMoverContext
     u8 convertedGSCBoxMons[30];
     u8 frameDelay;
     bool8 bg3Scorllable;
+    u8 language;
 };
 
 static u16 GetMonIconSpeciesFromLocalBox(u8 box, u8 row, u8 column, bool8 * isTransparent);
@@ -955,7 +956,7 @@ static u16 GetMonIconSpeciesFromGSCBox(u8 box, u8 row, u8 column, bool8 * isTran
 
 static void GetLocalBoxTitle(u8 box, u8 * boxTitle) {
     u8 *tail; 
-    if (gRomHeader->language == LANGUAGE_JAPANESE) {
+    if (sPokeMoverContext->language == LANGUAGE_JAPANESE) {
         boxTitle[0] = EXT_CTRL_CODE_BEGIN;
         boxTitle[1] = EXT_CTRL_CODE_JPN;
         tail = StringCopy(&boxTitle[2], gPokemonStoragePtr->boxNames[box]);
@@ -2495,6 +2496,7 @@ static void Task_SetupPokeMover(u8 taskId)
             }
             break;
         case 20:
+            sPokeMoverContext->language = CheckSaveLanguage();
             gRngValue = REG_TM1CNT_L;
             REG_TM1CNT_H = 0;
             task->tState = 0;

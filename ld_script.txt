@@ -204,6 +204,7 @@ SECTIONS {
         gflib.a:string_util.o(.text.GetExpandedPlaceholder);
         gflib.a:string_util.o(.text.StringCopy);
         gflib.a:string_util.o(.text.StringCopyN);
+        gflib.a:string_util.o(.text.StringCompare);
         gflib.a:string_util.o(.text.StringExpandPlaceholders);
         gflib.a:string_util.o(.text.StringLength)
         gflib.a:task.o(.text.CreateTask);

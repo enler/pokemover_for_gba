@@ -3,5 +3,6 @@
 
 bool8 DetectRom();
 bool8 DetectSave();
+u8 CheckSaveLanguage();
 
 #endif

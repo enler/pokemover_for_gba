@@ -5,6 +5,7 @@
 #include "malloc.h"
 #include "pokemon_rom_resource.h"
 #include "save.h"
+#include "string_util.h"
 #include "text_ext.h"
 #include "window.h"
 
@@ -15,6 +16,32 @@ u16 *gSaveVars;
 u8 *gSaveFlags;
 
 static const u8 gTextSaveFailed[] = _("写入记录时发生错误，\n请按下A键重启。\p");
+
+u8 CheckSaveLanguage() {
+    struct Pokemon *partyPokemon = (struct Pokemon *)((u8 *)gSaveBlock1Ptr + gRomHeader->partyOffset);
+    u32 trainerId;
+    u8 *playerName = (u8 *)((u8 *)gSaveBlock2Ptr + gRomHeader->playerNameOffset);
+    u8 otName[PLAYER_NAME_LENGTH + 1];
+    u32 otId;
+    u16 species;
+    memcpy(&trainerId, ((u8 *)gSaveBlock2Ptr + gRomHeader->trainerIdOffset), sizeof(u32));
+    for (int i = 0; i < PARTY_SIZE; i++) {
+        GetBoxMonData(&partyPokemon[i].box, MON_DATA_OT_NAME, otName);
+        otId = GetBoxMonData(&partyPokemon[i].box, MON_DATA_OT_ID);
+        species = GetBoxMonData(&partyPokemon[i].box, MON_DATA_SPECIES_OR_EGG);
+        if (species == SPECIES_NONE)
+            break;
+        if (species == SPECIES_EGG)
+            continue;
+        if (otId == trainerId && StringCompare(otName, playerName) == 0)
+            return GetBoxMonData(&partyPokemon[i].box, MON_DATA_LANGUAGE);
+    }
+
+    if (playerName[6] == 0 && playerName[7] == 0)
+        return LANGUAGE_JAPANESE;
+
+    return gRomHeader->language;
+}
 
 bool8 DetectSave() {
     u8 status;
