@@ -286,8 +286,26 @@ static const u8 gTextSendToGBCUnsuccessfully0[] = _("发送失败，\n"
                                                     "没能进入连接交换的房间。");
 static const u8 gTextSendToGBCUnsuccessfully1[] = _("发送失败，没能触发漏洞，请检查步骤\n"
                                                     "以及GBC一端的游戏版本跟游戏语言。");
-static const u8 gTextSendSuccessfully[] = _("发送成功，接下来\n"
-                                            "可选择菜单中的“开始传输”进行传输。");
+static const u8 gTextSendSuccessfullyGBA[] = _("发送成功，此时可以在另外一台GBA上\n"
+                                               "插入“宝可梦 金/银/水晶版”的卡带。\p"
+                                               "插入的时候有一定概率重启，建议\n"
+                                               "按住L键的同时轻轻插入游戏卡带，\p"
+                                               "如果还是重启了，\n"
+                                               "请重新发送传输工具。\p"
+                                               "成功插入了游戏卡带后，即可选择\n"
+                                               "菜单中的“开始传输”进行传输。\p");
+static const u8 gTextSendSuccessfullyGBC[] = _("发送成功，如果想直接传输\n"
+                                               "当前GBC中的水晶版的宝可梦，\l"
+                                               "请直接在GBC上按下A键。\p"
+                                               "如果想传输其他的卡带，\n"
+                                               "请先拔出GBC当前的游戏卡带，\l"
+                                               "然后再插入其他的卡带。\p"
+                                               "拔出或插入卡带时有可能重启，\n"
+                                               "请小心地进行操作。\p"
+                                               "建议把待传的宝可梦提前传入水晶版，\n"
+                                               "就可以免去更换卡带的麻烦。\p"
+                                               "成功插入了游戏卡带后，即可选择\n"
+                                               "菜单中的“开始传输”进行传输。\p");
 static const u8 gTextUsageOfTranfering[] = _("在开始传输前，请确保已经将\n"
                                              "传输工具发送至另外一台游戏主机上，\p"
                                              "并且使用GB(C)连接线\n"
@@ -374,6 +392,8 @@ static const u8 gTextInfoA4[] = _("对于宝可梦的昵称以及初训家名，
                                   "对于时拉比，昵称以及初训家名\n"
                                   "将改成跟日语版圆形竞技场的\l"
                                   "时拉比一致。\p");
+
+extern const u8 gTextSoftVersion[];
 
 const u32 gMultiBootProgram_GSC_Transfer_Tool[] = INCBIN_U32("data/mb_GSC_transfer_tool.gba.lz");
 
@@ -1442,8 +1462,9 @@ static bool8 HandleSendingTransferToolToGBA(struct Task * task) {
                 task->tSubState += 2;
             break;
         case 2:
-            DrawDelayedMessage(0, gTextSendSuccessfully, 180);
-            task->tSubState = 4;
+            FillWindowPixelBuffer(0, PIXEL_FILL(1));
+            DrawMessage(gTextSendSuccessfullyGBA, 2);
+            task->tSubState = 5;
             break;
         case 3:
             DrawDelayedMessage(0, gTextSendUnsuccessfully, 180);
@@ -1453,6 +1474,10 @@ static bool8 HandleSendingTransferToolToGBA(struct Task * task) {
             ptr = (u8*)GetWordTaskArg(0, 4);
             FREE_AND_SET_NULL(ptr);
             if (HandleDelayedMessage(A_BUTTON | B_BUTTON))
+                result = TRUE;
+            break;
+        case 5:
+            if (HandleMessage())
                 result = TRUE;
             break;
     }
@@ -1548,9 +1573,10 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         break;
     case 8:
         if (sPokeMoverContext->linkStatus.status == STATE_SENDING_PAYLOAD_COMPLETELY) {
-            DrawDelayedMessage(0, gTextSendSuccessfully, 180);
+            FillWindowPixelBuffer(0, PIXEL_FILL(1));
+            DrawMessage(gTextSendSuccessfullyGBC, 2);
             ExitLinkGSCTrade();
-            task->tSubState++;
+            task->tSubState = 10;
         }
         else if (sPokeMoverContext->linkStatus.timer++ >= 600) {
             DrawDelayedMessage(0, gTextSendToGBCUnsuccessfully1, 180);
@@ -1563,6 +1589,10 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         break;
     case 9:
         if (HandleDelayedMessage(A_BUTTON))
+            result = TRUE;
+        break;
+    case 10:
+        if (HandleMessage())
             result = TRUE;
         break;
     }
@@ -2180,7 +2210,9 @@ static s32 HandleInfoView(struct Task * task) {
     switch(task->tSubState) {
         case 0:
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            DrawText(0, gTextAskForInfo, 0, 0, NULL, TRUE);
+            DrawText(0, gTextAskForInfo, 0, 0, NULL, FALSE);
+            DrawText(0, gTextSoftVersion, gWindows[0].window.width * 8 - GetStringWidth(FONT_NORMAL, gTextSoftVersion, 0),
+                     gWindows[0].window.height * 8 - 16, NULL, TRUE);
             task->tSubState++;
             break;
         case 1:
