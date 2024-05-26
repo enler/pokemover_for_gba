@@ -142,13 +142,10 @@ static void IntrTimer3_LinkGSCTrade(void)
     }
 }
 
-static void IntrSerial_LinkGSCTrade(void) {
+static bool8 HandleReceivedByte(u8 *dataPtr) {
     static const u8 handshakeBytes[] = {0x0, 0x61, 0x0, 0xD1, 0x0};
     static const u8 enteringTradeViewLeadBytes[] = {0x75, 0x0, 0x76, 0x0};
-    u8 data;
-    REG_TM3CNT_H &= ~TIMER_ENABLE;
-
-    data = REG_SIODATA8 & 0xFF;
+    u8 data = *dataPtr;
 
     switch (sLinkGSCTrade->state)
     {
@@ -189,7 +186,7 @@ static void IntrSerial_LinkGSCTrade(void) {
                 sLinkGSCTrade->state = STATE_IDLE;
                 if (sLinkGSCTrade->callback)
                     sLinkGSCTrade->callback(sLinkGSCTrade->state, FALSE);
-                return;
+                return FALSE;
             }
             else {
                 sLinkGSCTrade->state = STATE_ENTERING_TRADE_ROOM_STANDBY;
@@ -337,8 +334,22 @@ static void IntrSerial_LinkGSCTrade(void) {
         }
         break;
     case STATE_SENDING_PAYLOAD_COMPLETELY:
-        return;
+        return FALSE;
     }
+
+    *dataPtr = data;
+
+    return TRUE;
+}
+
+static void IntrSerial_LinkGSCTrade(void) {
+    u8 data;
+    REG_TM3CNT_H &= ~TIMER_ENABLE;
+
+    data = REG_SIODATA8 & 0xFF;
+
+    if (!HandleReceivedByte(&data))
+        return;
 
     sLinkGSCTrade->latestData = data;
     REG_SIODATA8 = data;
