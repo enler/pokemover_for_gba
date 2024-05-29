@@ -126,20 +126,25 @@ static void CreateMailData(u8 * mailData, const struct LinkDataParams * params) 
 
 static void IntrTimer3_LinkGSCTrade(void)
 {
-    REG_TM3CNT_H &= ~TIMER_ENABLE;
-    if (!sLinkGSCTrade->timerState) {
-        REG_TM3CNT_L = -(8 * 0x1000000 / 64 / 1000);
-        REG_SIOCNT |= SIO_ENABLE;
-        REG_TM3CNT_H |= TIMER_ENABLE;
-        sLinkGSCTrade->timerState = !sLinkGSCTrade->timerState;
-    }
-    else {
+    static u32 counterLimit;
+    switch (sLinkGSCTrade->timerState)
+    {
+    case 0:
+        sLinkGSCTrade->timerState++;
+        counterLimit = gMain.vblankCounter1 + 60;
         REG_SIOCNT &= ~SIO_ENABLE;
         REG_SIODATA8 = sLinkGSCTrade->latestData;
-        REG_TM3CNT_L = -(2 * 0x1000000 / 64 / 1000);
-        REG_TM3CNT_H |= TIMER_ENABLE;
-        sLinkGSCTrade->timerState = !sLinkGSCTrade->timerState;
+        break;
+    case 1:
+        sLinkGSCTrade->timerState++;
+        REG_SIOCNT |= SIO_ENABLE;
+        break;
+    case 2:
+        if ((s32)(counterLimit - gMain.vblankCounter1) <= 0)
+            sLinkGSCTrade->timerState = 0;
+        break;
     }
+    INTR_CHECK |= INTR_FLAG_TIMER3;
 }
 
 static bool8 HandleReceivedByte(u8 *dataPtr) {
@@ -356,6 +361,8 @@ static void IntrSerial_LinkGSCTrade(void) {
     REG_TM3CNT_L = -(2 * 0x1000000 / 64 / 1000);
     REG_TM3CNT_H |= TIMER_ENABLE;
     sLinkGSCTrade->timerState = 0;
+
+    INTR_CHECK |= INTR_FLAG_SERIAL;
 }
 
 void TryHandshakeWithGSC() {

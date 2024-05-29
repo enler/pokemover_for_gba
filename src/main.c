@@ -84,8 +84,8 @@ static void VBlankIntr(void)
         gMain.vblankCallback();
     CopyBufferedValuesToGpuRegs();
     ProcessDma3Requests();
-    INTR_CHECK |= INTR_FLAG_VBLANK;
     gMain.vblankCounter1++;
+    INTR_CHECK |= INTR_FLAG_VBLANK;
 }
 
 static void IntrDummy(void)
