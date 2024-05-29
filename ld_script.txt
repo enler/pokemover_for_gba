@@ -262,8 +262,6 @@ SECTIONS {
         gflib.a:agb_flash_le.o(.rodata.leMaxTime);
         gflib.a:agb_flash_le.o(.rodata.LE26FV10N1TS);
         gflib.a:bg.o(.rodata.CSWTCH.75);
-        gflib.a:data.o(.rodata.gMoveNames);
-        gflib.a:data.o(.rodata.gText_BadEgg)
         . = ALIGN(4);
         gflib.a:graphics.o(.rodata.gMessageBox_Gfx);
         gflib.a:graphics.o(.rodata.gMessageBox_Pal);
