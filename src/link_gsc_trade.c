@@ -47,7 +47,7 @@ struct LinkGSCTrade
 {
     u8 state;
     u8 currentBufferIndex;
-    u16 currenrBufferOffset;    
+    u16 currentBufferOffset;
     u8 *buffers[SERIAL_MAX_BUFFERS];
     u16 bufferLengths[SERIAL_MAX_BUFFERS];
     NotifyStatusChangedCallback callback;
@@ -160,8 +160,8 @@ static bool8 HandleReceivedByte(u8 *dataPtr) {
     case STATE_EXCHANGE_SERIAL_CLOCK:
         if (data == SERIAL_MASTER || data == SERIAL_SLAVE)
         {
-            sLinkGSCTrade->currenrBufferOffset = 0;
-            data = handshakeBytes[sLinkGSCTrade->currenrBufferOffset];
+            sLinkGSCTrade->currentBufferOffset = 0;
+            data = handshakeBytes[sLinkGSCTrade->currentBufferOffset];
             sLinkGSCTrade->state++;
             if (sLinkGSCTrade->callback)
                 sLinkGSCTrade->callback(sLinkGSCTrade->state, FALSE);
@@ -170,24 +170,24 @@ static bool8 HandleReceivedByte(u8 *dataPtr) {
             data = SERIAL_MASTER;
         break;
     case STATE_ENTERING_TRADE_ROOM_STANDBY:
-        if (data == handshakeBytes[sLinkGSCTrade->currenrBufferOffset]) {
+        if (data == handshakeBytes[sLinkGSCTrade->currentBufferOffset]) {
             sLinkGSCTrade->state++;
             if (sLinkGSCTrade->callback)
                 sLinkGSCTrade->callback(sLinkGSCTrade->state, FALSE);
         }
-        data = handshakeBytes[sLinkGSCTrade->currenrBufferOffset];
+        data = handshakeBytes[sLinkGSCTrade->currentBufferOffset];
         break;
     case STATE_ENTERING_TRADE_ROOM:
-        if ((sLinkGSCTrade->currenrBufferOffset < sizeof(handshakeBytes) - 1 && data == SERIAL_NO_DATA_BYTE) || data == handshakeBytes[sLinkGSCTrade->currenrBufferOffset])
+        if ((sLinkGSCTrade->currentBufferOffset < sizeof(handshakeBytes) - 1 && data == SERIAL_NO_DATA_BYTE) || data == handshakeBytes[sLinkGSCTrade->currentBufferOffset])
         {
-            data = handshakeBytes[sLinkGSCTrade->currenrBufferOffset];
+            data = handshakeBytes[sLinkGSCTrade->currentBufferOffset];
             if (sLinkGSCTrade->callback)
                 sLinkGSCTrade->callback(sLinkGSCTrade->state, TRUE);
         }
         else
         {
-            sLinkGSCTrade->currenrBufferOffset++;
-            if (sLinkGSCTrade->currenrBufferOffset >= sizeof(handshakeBytes)) {
+            sLinkGSCTrade->currentBufferOffset++;
+            if (sLinkGSCTrade->currentBufferOffset >= sizeof(handshakeBytes)) {
                 sLinkGSCTrade->state = STATE_IDLE;
                 if (sLinkGSCTrade->callback)
                     sLinkGSCTrade->callback(sLinkGSCTrade->state, FALSE);
@@ -197,33 +197,33 @@ static bool8 HandleReceivedByte(u8 *dataPtr) {
                 sLinkGSCTrade->state = STATE_ENTERING_TRADE_ROOM_STANDBY;
                 if (sLinkGSCTrade->callback)
                     sLinkGSCTrade->callback(sLinkGSCTrade->state, TRUE);
-                data = handshakeBytes[sLinkGSCTrade->currenrBufferOffset];
+                data = handshakeBytes[sLinkGSCTrade->currentBufferOffset];
             }
         }
         break;
     case STATE_ENTERING_TRADE_VIEW_STANDBY:
-        if (data == enteringTradeViewLeadBytes[sLinkGSCTrade->currenrBufferOffset])
+        if (data == enteringTradeViewLeadBytes[sLinkGSCTrade->currentBufferOffset])
         {
             sLinkGSCTrade->state++;
             if (sLinkGSCTrade->callback)
                 sLinkGSCTrade->callback(sLinkGSCTrade->state, FALSE);
         }
-        data = enteringTradeViewLeadBytes[sLinkGSCTrade->currenrBufferOffset];
+        data = enteringTradeViewLeadBytes[sLinkGSCTrade->currentBufferOffset];
         break;
     case STATE_ENTERING_TRADE_VIEW:
-        if (data == SERIAL_NO_DATA_BYTE || data == enteringTradeViewLeadBytes[sLinkGSCTrade->currenrBufferOffset]) {
-            data = enteringTradeViewLeadBytes[sLinkGSCTrade->currenrBufferOffset];
+        if (data == SERIAL_NO_DATA_BYTE || data == enteringTradeViewLeadBytes[sLinkGSCTrade->currentBufferOffset]) {
+            data = enteringTradeViewLeadBytes[sLinkGSCTrade->currentBufferOffset];
             if (sLinkGSCTrade->callback)
                 sLinkGSCTrade->callback(sLinkGSCTrade->state, TRUE);
         }
         else
         {
-            sLinkGSCTrade->currenrBufferOffset++;
-            if (sLinkGSCTrade->currenrBufferOffset >= sizeof(enteringTradeViewLeadBytes)) {
+            sLinkGSCTrade->currentBufferOffset++;
+            if (sLinkGSCTrade->currentBufferOffset >= sizeof(enteringTradeViewLeadBytes)) {
                 sLinkGSCTrade->state++;
                 if (sLinkGSCTrade->callback)
                     sLinkGSCTrade->callback(sLinkGSCTrade->state, FALSE);
-                sLinkGSCTrade->currenrBufferOffset = 0;
+                sLinkGSCTrade->currentBufferOffset = 0;
                 sLinkGSCTrade->currentBufferIndex = 0;
                 data = SERIAL_NO_DATA_BYTE;
             }
@@ -231,13 +231,13 @@ static bool8 HandleReceivedByte(u8 *dataPtr) {
                 sLinkGSCTrade->state = STATE_ENTERING_TRADE_VIEW_STANDBY;
                 if (sLinkGSCTrade->callback)
                     sLinkGSCTrade->callback(sLinkGSCTrade->state, TRUE);
-                data = enteringTradeViewLeadBytes[sLinkGSCTrade->currenrBufferOffset];
+                data = enteringTradeViewLeadBytes[sLinkGSCTrade->currentBufferOffset];
             }
         }
         break;
     case STATE_EXCHANGE_DATA_LEAD_BYTE_STANDBY:
     STATE_EXCHANGE_DATA_LEAD_BYTE_STANDBY_CASE:
-        data = sLinkGSCTrade->buffers[sLinkGSCTrade->currentBufferIndex][sLinkGSCTrade->currenrBufferOffset];
+        data = sLinkGSCTrade->buffers[sLinkGSCTrade->currentBufferIndex][sLinkGSCTrade->currentBufferOffset];
         if (sLinkGSCTrade->currentBufferIndex == 3)
             sLinkGSCTrade->state += 2;
         else
@@ -250,12 +250,12 @@ static bool8 HandleReceivedByte(u8 *dataPtr) {
             sLinkGSCTrade->state++;
         else
         {
-            data = sLinkGSCTrade->buffers[sLinkGSCTrade->currentBufferIndex][sLinkGSCTrade->currenrBufferOffset];
+            data = sLinkGSCTrade->buffers[sLinkGSCTrade->currentBufferIndex][sLinkGSCTrade->currentBufferOffset];
             break;
         }
     case STATE_EXCHANGE_DATA:
-        if (sLinkGSCTrade->currenrBufferOffset < sLinkGSCTrade->bufferLengths[sLinkGSCTrade->currentBufferIndex])
-            data = sLinkGSCTrade->buffers[sLinkGSCTrade->currentBufferIndex][sLinkGSCTrade->currenrBufferOffset++];
+        if (sLinkGSCTrade->currentBufferOffset < sLinkGSCTrade->bufferLengths[sLinkGSCTrade->currentBufferIndex])
+            data = sLinkGSCTrade->buffers[sLinkGSCTrade->currentBufferIndex][sLinkGSCTrade->currentBufferOffset++];
         else
         {
             sLinkGSCTrade->currentBufferIndex++;
@@ -269,7 +269,7 @@ static bool8 HandleReceivedByte(u8 *dataPtr) {
             else
             {
                 sLinkGSCTrade->state = STATE_EXCHANGE_DATA_LEAD_BYTE_STANDBY;
-                sLinkGSCTrade->currenrBufferOffset = 0;
+                sLinkGSCTrade->currentBufferOffset = 0;
                 if (sLinkGSCTrade->callback)
                     sLinkGSCTrade->callback(sLinkGSCTrade->state, FALSE);
                 goto STATE_EXCHANGE_DATA_LEAD_BYTE_STANDBY_CASE;
@@ -283,7 +283,7 @@ static bool8 HandleReceivedByte(u8 *dataPtr) {
             sLinkGSCTrade->state++;
             sLinkGSCTrade->bufferCmd = data;
             sLinkGSCTrade->subState = 0;
-            sLinkGSCTrade->currenrBufferOffset = (data & 0x0F) * 0x100;
+            sLinkGSCTrade->currentBufferOffset = (data & 0x0F) * 0x100;
         }
         else if (data == 0xD0) {
             sLinkGSCTrade->state = STATE_SENDING_PAYLOAD_COMPLETELY;
@@ -306,7 +306,7 @@ static bool8 HandleReceivedByte(u8 *dataPtr) {
             if (sLinkGSCTrade->callback)
                 sLinkGSCTrade->callback(sLinkGSCTrade->state, TRUE);
             if (sLinkGSCTrade->subState < 3) {
-                if ((sLinkGSCTrade->currenrBufferOffset - (data & 0x0F) * 0x100) == 0x100)
+                if ((sLinkGSCTrade->currentBufferOffset - (data & 0x0F) * 0x100) == 0x100)
                     sLinkGSCTrade->subState = 3;
             }
             if (sLinkGSCTrade->subState == 0) {
@@ -314,17 +314,17 @@ static bool8 HandleReceivedByte(u8 *dataPtr) {
                 data = 0xFD;
             }
             else if (sLinkGSCTrade->subState == 1) {
-                data = sLinkGSCTrade->payload[sLinkGSCTrade->currenrBufferOffset];
+                data = sLinkGSCTrade->payload[sLinkGSCTrade->currentBufferOffset];
                 if (data == 0xFE || data == 0xFF) {
                     sLinkGSCTrade->subState++;
                     data = 0xFF;
                 }
                 else
-                    sLinkGSCTrade->currenrBufferOffset++;
+                    sLinkGSCTrade->currentBufferOffset++;
             }
             else if (sLinkGSCTrade->subState == 2) {
                 sLinkGSCTrade->subState = 1;
-                data = sLinkGSCTrade->payload[sLinkGSCTrade->currenrBufferOffset++];
+                data = sLinkGSCTrade->payload[sLinkGSCTrade->currentBufferOffset++];
             }
             else if (sLinkGSCTrade->subState == 3) {
                 sLinkGSCTrade->subState++;
@@ -382,7 +382,7 @@ void TryHandshakeWithGSC() {
 
 void TryEnteringGSCTradeView() {
     sLinkGSCTrade->state = STATE_ENTERING_TRADE_VIEW_STANDBY;
-    sLinkGSCTrade->currenrBufferOffset = 0;
+    sLinkGSCTrade->currentBufferOffset = 0;
 
     REG_RCNT = 0;
     REG_SIOCNT = SIO_INTR_ENABLE | SIO_8BIT_MODE | 1;
