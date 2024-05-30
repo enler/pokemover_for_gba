@@ -38,7 +38,9 @@ ASM_SRCS := $(wildcard src/*.s)
 ASM_OBJS := $(ASM_SRCS:%.s=$(OBJ_DIR)/%.o)
 C_SRCS := $(wildcard src/*.c)
 C_OBJS := $(C_SRCS:%.c=$(OBJ_DIR)/%.o)
-GFLIB_C_SRCS := $(wildcard gflib/*.c)
+SUB_REPO_SRCS_0 := bg.c blit.c gpu_regs.c io_reg.c malloc.c window.c 
+SUB_REPO_SRCS_1 := agb_flash_le.c agb_flash_mx.c dynamic_placeholder_text_util.c international_string_util.c load_save.c menu_helpers.c random.c script_menu.c task.c util.c
+GFLIB_C_SRCS := $(wildcard gflib/*.c) $(foreach file,$(SUB_REPO_SRCS_0), $(SUB_REPO)/gflib/$(file)) $(foreach file,$(SUB_REPO_SRCS_1), $(SUB_REPO)/src/$(file))
 GFLIB_C_OBJS := $(GFLIB_C_SRCS:%.c=$(OBJ_DIR)/%.o)
 DATA_ASM_SRCS := $(wildcard data/*.s)
 DATA_ASM_OBJS := $(DATA_ASM_SRCS:%.s=$(OBJ_DIR)/%.o)
@@ -73,6 +75,7 @@ $(OBJ_DIR)/src/%.o: asm_dep = $(shell $(SCANINC) $(foreach dir,$(INC_DIRS),-I $(
 $(OBJ_DIR)/src/%.o: c_dep = $(shell $(SCANINC) $(foreach dir,$(INC_DIRS),-I $(dir)) $*.c)
 $(OBJ_DIR)/gflib/%.o: c_dep = $(shell $(SCANINC) $(foreach dir,$(INC_DIRS),-I $(dir)) $*.c)
 $(OBJ_DIR)/data/%.o: data_dep = $(shell $(SCANINC) $(foreach dir,$(INC_DIRS),-I $(dir)) $*.s)
+$(OBJ_DIR)/$(SUB_REPO)/src/%.o: c_dep = $(shell $(SCANINC) $(foreach dir,$(INC_DIRS),-I $(dir)) $*.c)
 endif
 
 infoshell = $(foreach line, $(shell $1 | sed "s/ /__SPACE__/g"), $(info $(subst __SPACE__, ,$(line))))
@@ -116,6 +119,7 @@ $(C_OBJS): $(OBJ_DIR)/%.o: %.c $$(c_dep)
 	$(AS) $(ASFLAGS) -o $@ $(OBJ_DIR)/$*.s
 
 $(GFLIB_C_OBJS): $(OBJ_DIR)/%.o: %.c $$(c_dep)
+	mkdir -p $(dir $(OBJ_DIR)/$*.i)
 	$(CPP) $(CPPFLAGS) -o $(OBJ_DIR)/$*.i $<
 	$(PREPROC) $(OBJ_DIR)/$*.i charmap.txt | $(CC1) $(CFLAGS) -o $(OBJ_DIR)/$*.s
 	$(AS) $(ASFLAGS) -o $@ $(OBJ_DIR)/$*.s
@@ -126,12 +130,12 @@ $(DATA_ASM_OBJS): $(OBJ_DIR)/%.o: %.s $$(data_dep)
 $(OBJ_DIR)/ld_script.ld: ld_script.txt
 	cd $(OBJ_DIR) && sed "s#tools/#../tools/#g" ../$< > ld_script.ld
 
-$(ELF): $(OBJ_DIR)/ld_script.ld $(ALL_OBJS) $(GFLIB)
+$(ELF): $(OBJ_DIR)/ld_script.ld $(GFLIB) $(ALL_OBJS)
 	cd $(OBJ_DIR) && $(LD) -Map ../$(NAME).map -T ../$< $(OBJS_REL) -o ../$@ $(LIBS)
 	$(GBAFIX) $@ -t"POKEMOVER" -cXXXX -m01 -r0 --silent
 
 $(GFLIB): $(GFLIB_C_OBJS)
-	$(AR) rcs $@ $(OBJ_DIR)/gflib/*.o
+	$(AR) rcs $@ $(OBJ_DIR)/gflib/*.o $(OBJ_DIR)/$(SUB_REPO)/gflib/*.o $(OBJ_DIR)/$(SUB_REPO)/src/*.o
 
 $(ROM): $(ELF)
 	$(OBJCOPY) -O binary $< $@
