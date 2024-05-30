@@ -39,3 +39,7 @@ prefabs.json
 *.diff
 *.sym
 *.js
+graphics/pokemon_storage/close_box_button.bin
+graphics/pokemon_storage/party_slot_empty.bin
+graphics/pokemon_storage/party_slot_filled.bin
+graphics/pokemon_storage/pkmn_data.bin

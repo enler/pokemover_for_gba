@@ -98,7 +98,7 @@ include graphics_file_rules.mk
 %.rl: % ; $(GFX) $< $@
 graphics/%.bin: $(SUB_REPO)/graphics/%.bin
 	mkdir -p $(dir $@)
-	cp $< $@
+	cp -n $< $@
 graphics/%.4bpp: $(SUB_REPO)/graphics/%.png
 	mkdir -p $(dir $@)
 	$(GFX) $< $@
