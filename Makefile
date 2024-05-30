@@ -29,6 +29,8 @@ BLZ		:= tools/blz/blz
 BLZFIX	:= tools/blz/fix.sh
 
 OBJ_DIR := build
+SUB_REPO := pokeemerald
+INC_DIRS := include gflib $(SUB_REPO) $(SUB_REPO)/include $(SUB_REPO)/gflib $(SUB_REPO)/src
 SUBDIRS := src data gflib
 GFLIB	:= $(OBJ_DIR)/gflib.a
 
@@ -47,9 +49,9 @@ OBJS_REL := $(patsubst $(OBJ_DIR)/%,%,$(ALL_OBJS))
 
 TOOLDIRS := tools/gbafix tools/gbagfx tools/preproc tools/scaninc tools/blz
 
-ASFLAGS	:= -mcpu=arm7tdmi
+ASFLAGS	:= -mcpu=arm7tdmi $(foreach dir,$(INC_DIRS),-I $(dir))
 CFLAGS	:= -Os -mthumb -mthumb-interwork -mabi=apcs-gnu -mtune=arm7tdmi -march=armv4t -fno-toplevel-reorder -Wno-pointer-to-int-cast -DMODERN=1 -Wno-multichar
-CPPFLAGS:= -iquote include -iquote gflib -Wno-trigraphs -DMODERN=1
+CPPFLAGS:= $(foreach dir,$(INC_DIRS),-iquote $(dir))  -Wno-trigraphs -DMODERN=1
 
 LIBPATH := -L "$(dir $(shell $(CC) -mthumb -print-file-name=libgcc.a))" -L "$(dir $(shell $(CC) -mthumb -print-file-name=libnosys.a))" -L "$(dir $(shell $(CC) -mthumb -print-file-name=libc.a))"
 LIBS	:= gflib.a $(LIBPATH) -lc -lgcc
@@ -58,7 +60,7 @@ $(GFLIB_C_OBJS) : CFLAGS += -ffunction-sections -fdata-sections
 
 $(OBJ_DIR)/src/math_fast.o: CFLAGS := -mthumb-interwork -O3 -mtune=arm7tdmi -march=armv4t
 
-$(shell mkdir -p $(SUBDIRS:%=$(OBJ_DIR)/%))
+$(shell mkdir -p $(SUBDIRS:%=$(OBJ_DIR)/%) graphics/interface graphics/pokedex graphics/spinda_spots graphics/text_window graphics/pokemon_storage/wallpapers)
 
 .PHONY: all clean tools cleantools syms
 
@@ -67,10 +69,10 @@ $(OBJ_DIR)/asm/%.o: asm_dep :=
 $(OBJ_DIR)/src/%.o: c_dep :=
 $(OBJ_DIR)/data/%.o: data_dep :=
 else
-$(OBJ_DIR)/src/%.o: asm_dep = $(shell $(SCANINC) -I include -I gflib $*.s)
-$(OBJ_DIR)/src/%.o: c_dep = $(shell $(SCANINC) -I include -I gflib $*.c)
-$(OBJ_DIR)/gflib/%.o: c_dep = $(shell $(SCANINC) -I include -I gflib $*.c)
-$(OBJ_DIR)/data/%.o: data_dep = $(shell $(SCANINC) -I include -I gflib $*.s)
+$(OBJ_DIR)/src/%.o: asm_dep = $(shell $(SCANINC) $(foreach dir,$(INC_DIRS),-I $(dir)) $*.s)
+$(OBJ_DIR)/src/%.o: c_dep = $(shell $(SCANINC) $(foreach dir,$(INC_DIRS),-I $(dir)) $*.c)
+$(OBJ_DIR)/gflib/%.o: c_dep = $(shell $(SCANINC) $(foreach dir,$(INC_DIRS),-I $(dir)) $*.c)
+$(OBJ_DIR)/data/%.o: data_dep = $(shell $(SCANINC) $(foreach dir,$(INC_DIRS),-I $(dir)) $*.s)
 endif
 
 infoshell = $(foreach line, $(shell $1 | sed "s/ /__SPACE__/g"), $(info $(subst __SPACE__, ,$(line))))
@@ -91,6 +93,19 @@ include graphics_file_rules.mk
 %.gbapal: %.png ; $(GFX) $< $@
 %.lz: % ; $(GFX) $< $@
 %.rl: % ; $(GFX) $< $@
+graphics/%.bin: $(SUB_REPO)/graphics/%.bin
+	mkdir -p $(dir $@)
+	cp $< $@
+graphics/%.4bpp: $(SUB_REPO)/graphics/%.png
+	mkdir -p $(dir $@)
+	$(GFX) $< $@
+graphics/%.gbapal: $(SUB_REPO)/graphics/%.pal
+	mkdir -p $(dir $@)
+	$(GFX) $< $@
+graphics/%.gbapal: $(SUB_REPO)/graphics/%.png
+	mkdir -p $(dir $@)
+	$(GFX) $< $@
+
 
 $(ASM_OBJS): $(OBJ_DIR)/%.o: %.s $$(asm_dep)
 	$(AS) $(ASFLAGS) -o $@ $<
@@ -132,3 +147,6 @@ clean:
 	@$(foreach tooldir,$(TOOLDIRS),$(MAKE) clean -C $(tooldir);)
 	rm -rf build
 	find . \( -iname '*.1bpp' -o -iname '*.4bpp' -o -iname '*.8bpp' -o -iname '*.gbapal' -o -iname '*.lz' -o -iname '*.rl' -o -iname '*.latfont' -o -iname '*.hwjpnfont' -o -iname '*.fwjpnfont' \) -exec rm {} +
+	rmdir graphics/interface graphics/pokedex graphics/spinda_spots graphics/text_window
+	rm -rf graphics/pokemon_storage/wallpapers
+	rm graphics/pokemon_storage/close_box_button.bin graphics/pokemon_storage/party_slot_empty.bin graphics/pokemon_storage/party_slot_filled.bin graphics/pokemon_storage/pkmn_data.bin 
