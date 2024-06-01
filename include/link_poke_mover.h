@@ -38,7 +38,7 @@ void FinishSyncErase();
 u8 *GetLinkPokeMoverBuffer();
 void ExitLinkPokeMover();
 
-void SetupLinkGSCTrade(bool8 isJPN, NotifyStatusChangedCallback callback);
+void SetupLinkGSCTrade(u8 language, bool8 isGS, NotifyStatusChangedCallback callback);
 void TryHandshakeWithGSC();
 void TryEnteringGSCTradeView();
 void ExitLinkGSCTrade();

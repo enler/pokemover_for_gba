@@ -7,8 +7,11 @@
 
 #define CRYSTAL_MOBILE_CTRL 0x15
 #define GBZ80_OPCODE_JUMP 0xC3
-#define PAYLOAD_ENTRYPOINT_INTL 0xD288
-#define PAYLOAD_ENTRYPOINT_JP 0xD2B9
+#define SHELLCODE_ENTRYPOINT_CRYSTAL_INTL 0xD288
+#define SHELLCODE_ENTRYPOINT_CRYSTAL_JPN 0xD2B9
+#define SHELLCODE_ENTRYPOINT_GS_INTL 0xDDFE
+#define SHELLCODE_ENTRYPOINT_GS_JPN 0xDD7F
+#define SHELLCODE_ENTRYPOINT_GS_KOR 0xDEDE
 
 #define SERIAL_MASTER 1
 #define SERIAL_SLAVE 2
@@ -19,10 +22,12 @@
 #define SERIAL_PATCH_PREAMBLE_LENGTH 3
 #define SERIAL_RNS_LENGTH 10
 #define SERIAL_MAIL_PREAMBLE_BYTE 0x20
+#define SERIAL_MAIL_PREAMBLE_BYTE_GS_KOR 0x52
 #define SERIAL_MAIL_PREAMBLE_LENGTH 5
 
 #define MAIL_STRUCT_LENGTH 0x2f
-#define MAIL_STRUCT_LENGTH_JP 0x2a
+#define MAIL_STRUCT_LENGTH_JPN 0x2a
+#define MAIL_STRUCT_LENGTH_KOR 0x4f
 
 #define PARTY_LENGTH 6
 #define PARTYMON_STRUCT_LENGTH 0x30
@@ -34,13 +39,47 @@
 
 #define SERIAL_PATCH_LIST_LENGTH 200
 
+struct LinkGSCPlayerDataJPN {
+    u8 preambleBytes[SERIAL_PREAMBLE_LENGTH];
+    u8 playerName[NAME_LENGTH_GSC_JP + 1];
+    u8 partyConut;
+    u8 partySpecies[PARTY_LENGTH];
+    u8 partyTerminator;
+    u16 trainerId;
+    u8 partyMon[PARTY_LENGTH][PARTYMON_STRUCT_LENGTH];
+    u8 partyMonNames[PARTY_LENGTH][NAME_LENGTH_GSC_JP + 1];
+    u8 partyMonOtNames[PARTY_LENGTH][NAME_LENGTH_GSC_JP + 1];
+    u8 padding[7];
+} __attribute__((packed));
+
+struct LinkGSCPlayerDataINTL {
+    u8 preambleBytes[SERIAL_PREAMBLE_LENGTH];
+    u8 playerName[NAME_LENGTH_GSC_INTL + 1];
+    u8 partyConut;
+    u8 partySpecies[PARTY_LENGTH];
+    u8 partyTerminator;
+    u16 trainerId;
+    u8 partyMon[PARTY_LENGTH][PARTYMON_STRUCT_LENGTH];
+    u8 partyMonNames[PARTY_LENGTH][NAME_LENGTH_GSC_INTL + 1];
+    u8 partyMonOtNames[PARTY_LENGTH][NAME_LENGTH_GSC_INTL + 1];
+    u8 padding[3];
+} __attribute__((packed));
+
+struct ShellCodeParams {
+    u16 shellcodeEntryPoint;
+    u16 shellCodeLength;
+    const u8 *shellcode;
+    u8 lineChar;
+    u8 nextLineChar;
+    u8 nextLineCharsNum;
+    u8 entrypointNum;
+};
+
 struct LinkDataParams {
     u16 linkDataLength;
     u16 mailDataLength;
     u8 playerIdOffset;
     u8 mailEntryLength;
-    u16 shellcodeEntryPoint;
-    const u8 *shellcode;
 };
 
 struct LinkGSCTrade
@@ -60,45 +99,105 @@ struct LinkGSCTrade
 
 static struct LinkGSCTrade *sLinkGSCTrade;
 
-extern const u8 gShellCode_Trade_GSC_JPN_Start[];
-extern const u8 gShellCode_Trade_GSC_JPN_End[];
-extern const u8 gShellCode_Trade_GSC_INTL_Start[];
-extern const u8 gShellCode_Trade_GSC_INTL_End[];
+const u8 gShellCode_Trade_GS_INTL[] = INCBIN_U8("data/shellcode_trade_gs_intl.bin");
+const u8 gShellCode_Trade_GS_JPN[] = INCBIN_U8("data/shellcode_trade_gs_jpn.bin");
+const u8 gShellCode_Trade_GS_KOR[] = INCBIN_U8("data/shellcode_trade_gs_kor.bin");
+const u8 gShellCode_Trade_Crystal_JPN[] = INCBIN_U8("data/shellcode_trade_gsc_jpn.bin");
+const u8 gShellCode_Trade_Crystal_INTL[] = INCBIN_U8("data/shellcode_trade_gsc_intl.bin");
 const u32 gPayload_GSC_transfer_tool[] = INCBIN_U32("data/payload_GSC_transfer_tool.bin.lz");
 
-const struct LinkDataParams paramsJpn = {
-    .linkDataLength = SERIAL_PREAMBLE_LENGTH + (NAME_LENGTH_GSC_JP + 1) + sizeof(u8) + PARTY_LENGTH + sizeof(u8) + sizeof(u16) + PARTYMON_STRUCT_LENGTH * PARTY_LENGTH + PARTY_LENGTH * (NAME_LENGTH_GSC_JP + 1) * 2 + 7,
-    .playerIdOffset = SERIAL_PREAMBLE_LENGTH + (NAME_LENGTH_GSC_JP + 1) + sizeof(u8) + PARTY_LENGTH + sizeof(u8),
-    .mailEntryLength = MAIL_STRUCT_LENGTH_JP,
-    .mailDataLength = 0x122,
-    .shellcodeEntryPoint = PAYLOAD_ENTRYPOINT_JP,
-    .shellcode = gShellCode_Trade_GSC_JPN_Start
+
+static const struct LinkDataParams sLinkDataParamsGSCJPN = {
+    .linkDataLength = sizeof(struct LinkGSCPlayerDataJPN),
+    .playerIdOffset = offsetof(struct LinkGSCPlayerDataJPN, trainerId),
+    .mailEntryLength = MAIL_STRUCT_LENGTH_JPN,
+    .mailDataLength = 0x122
 };
 
-const struct LinkDataParams paramsIntl = {
-    .linkDataLength = SERIAL_PREAMBLE_LENGTH + (NAME_LENGTH_GSC_INTL + 1) + sizeof(u8) + PARTY_LENGTH + sizeof(u8) + sizeof(u16) + PARTYMON_STRUCT_LENGTH * PARTY_LENGTH + PARTY_LENGTH * (NAME_LENGTH_GSC_INTL + 1) * 2 + 3,
-    .playerIdOffset = SERIAL_PREAMBLE_LENGTH + (NAME_LENGTH_GSC_INTL + 1) + sizeof(u8) + PARTY_LENGTH + sizeof(u8),
+static const struct LinkDataParams sLinkDataParamsGSCINTL = {
+    .linkDataLength = sizeof(struct LinkGSCPlayerDataINTL),
+    .playerIdOffset = offsetof(struct LinkGSCPlayerDataINTL, trainerId),
     .mailEntryLength = MAIL_STRUCT_LENGTH,
-    .mailDataLength = 0x186,
-    .shellcodeEntryPoint = PAYLOAD_ENTRYPOINT_INTL,
-    .shellcode = gShellCode_Trade_GSC_INTL_Start
+    .mailDataLength = 0x186
 };
 
-static void CreateLinkData(u8 * linkData, const struct LinkDataParams * params) {
+static const struct LinkDataParams sLinkDataParamsGSKOR = {
+    .linkDataLength = sizeof(struct LinkGSCPlayerDataINTL),
+    .playerIdOffset = offsetof(struct LinkGSCPlayerDataINTL, trainerId),
+    .mailEntryLength = MAIL_STRUCT_LENGTH_KOR,
+    .mailDataLength = 0x234
+};
+
+static const struct ShellCodeParams sShellCodeParamsGSJPN = {
+    .shellcodeEntryPoint = SHELLCODE_ENTRYPOINT_GS_JPN,
+    .shellCodeLength = sizeof(gShellCode_Trade_GS_JPN),
+    .shellcode = gShellCode_Trade_GS_JPN,
+    .lineChar = 0x4F,
+    .nextLineChar = 0x4E,
+    .nextLineCharsNum = 0x9F,
+    .entrypointNum = 0x10
+};
+
+static const struct ShellCodeParams sShellCodeParamsGSINTL = {
+    .shellcodeEntryPoint = SHELLCODE_ENTRYPOINT_GS_INTL,
+    .shellCodeLength = sizeof(gShellCode_Trade_GS_INTL),
+    .shellcode = gShellCode_Trade_GS_INTL,
+    .lineChar = 0x4F,
+    .nextLineChar = 0x4E,
+    .nextLineCharsNum = 0xA4,
+    .entrypointNum = 0x8
+};
+
+static const struct ShellCodeParams sShellCodeParamsGSKOR = {
+    .shellcodeEntryPoint = SHELLCODE_ENTRYPOINT_GS_KOR,
+    .shellCodeLength = sizeof(gShellCode_Trade_GS_KOR),
+    .shellcode = gShellCode_Trade_GS_KOR,
+    .lineChar = 0x5A,
+    .nextLineChar = 0x59,
+    .nextLineCharsNum = 0x3D,
+    .entrypointNum = 0x2D
+};
+
+static const struct ShellCodeParams sShellCodeParamsCrystalJPN = {
+    .shellcodeEntryPoint = SHELLCODE_ENTRYPOINT_CRYSTAL_JPN,
+    .shellCodeLength = sizeof(gShellCode_Trade_Crystal_JPN),
+    .shellcode = gShellCode_Trade_Crystal_JPN
+};
+
+static const struct ShellCodeParams sShellCodeParamsCrystalINTL = {
+    .shellcodeEntryPoint = SHELLCODE_ENTRYPOINT_CRYSTAL_INTL,
+    .shellCodeLength = sizeof(gShellCode_Trade_Crystal_INTL),
+    .shellcode = gShellCode_Trade_Crystal_INTL
+};
+
+static void CreateLinkData(u8 * linkData, const struct LinkDataParams * linkDataParams, const struct ShellCodeParams * shellCodeParams, bool8 useStackSmashing) {
     u8 *nameBuff = linkData + SERIAL_PREAMBLE_LENGTH;
-    u8 *payload = linkData + params->playerIdOffset + sizeof(u16);
-    memset(linkData, 0x50, params->linkDataLength);
+    u8 *payload = linkData + linkDataParams->playerIdOffset + sizeof(u16);
+    memset(linkData, 0x50, linkDataParams->linkDataLength);
     memset(linkData, SERIAL_PREAMBLE_BYTE, SERIAL_PREAMBLE_LENGTH);
-    nameBuff[0] = CRYSTAL_MOBILE_CTRL;
-    nameBuff[1] = 0x00;
-    nameBuff[2] = GBZ80_OPCODE_JUMP; // jp
-    nameBuff[3] = params->shellcodeEntryPoint & 0xFF;
-    nameBuff[4] = params->shellcodeEntryPoint >> 8;
-    memcpy(payload, params->shellcode, gShellCode_Trade_GSC_JPN_End - gShellCode_Trade_GSC_JPN_Start);
+    if (!useStackSmashing) {
+        nameBuff[0] = CRYSTAL_MOBILE_CTRL;
+        nameBuff[1] = 0x00;
+        nameBuff[2] = GBZ80_OPCODE_JUMP; // jp
+        nameBuff[3] = shellCodeParams->shellcodeEntryPoint & 0xFF;
+        nameBuff[4] = shellCodeParams->shellcodeEntryPoint >> 8;
+        memcpy(payload, shellCodeParams->shellcode, shellCodeParams->shellCodeLength);
+    }
+    else {
+        *nameBuff++ = shellCodeParams->lineChar;
+        memset(nameBuff, shellCodeParams->nextLineChar, shellCodeParams->nextLineCharsNum);
+        nameBuff += shellCodeParams->nextLineCharsNum;
+        for (s32 i = 0; i < shellCodeParams->entrypointNum; i++) {
+            *nameBuff++ = shellCodeParams->shellcodeEntryPoint & 0xFF;
+            *nameBuff++ = shellCodeParams->shellcodeEntryPoint >> 8;
+        }
+        *nameBuff++ = 0x50;
+        memcpy(nameBuff, shellCodeParams->shellcode, shellCodeParams->shellCodeLength);
+    }
 }
 
 static void CreatePatchList(u8 * patchList, u8 * playerData, const struct LinkDataParams * params) {
-    u8 patchAreaLengths[2] = {SERIAL_PATCH_DATA_SIZE, sizeof(u16) + PARTYMON_STRUCT_LENGTH * PARTY_LENGTH - SERIAL_PATCH_DATA_SIZE};
+    u8 patchAreaLengths[2] = {SERIAL_PATCH_DATA_SIZE, params->linkDataLength - SERIAL_PATCH_DATA_SIZE};
     s32 i, j;
     memset(patchList, 0, SERIAL_PATCH_LIST_LENGTH);
     memset(patchList, SERIAL_PREAMBLE_BYTE, SERIAL_PATCH_PREAMBLE_LENGTH);
@@ -116,9 +215,10 @@ static void CreatePatchList(u8 * patchList, u8 * playerData, const struct LinkDa
     }
 }
 
-static void CreateMailData(u8 * mailData, const struct LinkDataParams * params) {
+static void CreateMailData(u8 * mailData, const struct LinkDataParams * params, u8 language) {
+    u8 preambleByte = language == LANGUAGE_KOREAN ? SERIAL_MAIL_PREAMBLE_BYTE_GS_KOR : SERIAL_MAIL_PREAMBLE_BYTE;
     memset(mailData, 0, params->mailDataLength);
-    memset(mailData, SERIAL_MAIL_PREAMBLE_BYTE, SERIAL_MAIL_PREAMBLE_LENGTH);
+    memset(mailData, preambleByte, SERIAL_MAIL_PREAMBLE_LENGTH);
     mailData += SERIAL_MAIL_PREAMBLE_LENGTH;
     mailData += params->mailEntryLength * PARTY_LENGTH;
     *mailData = 0xFF;
@@ -419,17 +519,39 @@ void ExitLinkGSCTrade() {
     REG_IME = imeTemp;
 }
 
-void SetupLinkGSCTrade(bool8 isJPN, NotifyStatusChangedCallback callback) {
-    const struct LinkDataParams *params = isJPN ? &paramsJpn : &paramsIntl;
+void SetupLinkGSCTrade(u8 language, bool8 isGS, NotifyStatusChangedCallback callback) {
+    const struct LinkDataParams *linkDataParams;
+    const struct ShellCodeParams *shellCodeParams;
     s32 i;
+    if (language == LANGUAGE_JAPANESE)
+        linkDataParams = &sLinkDataParamsGSCJPN;
+    else if (language == LANGUAGE_KOREAN)
+        linkDataParams = &sLinkDataParamsGSKOR;
+    else
+        linkDataParams = &sLinkDataParamsGSCINTL;
+    if (isGS) {
+        if (language == LANGUAGE_JAPANESE)
+            shellCodeParams = &sShellCodeParamsGSJPN;
+        else if (language == LANGUAGE_KOREAN)
+            shellCodeParams = &sShellCodeParamsGSKOR;
+        else
+            shellCodeParams = &sShellCodeParamsGSINTL;
+    }
+    else {
+        if (language == LANGUAGE_JAPANESE)
+            shellCodeParams = &sShellCodeParamsCrystalJPN;
+        else
+            shellCodeParams = &sShellCodeParamsCrystalINTL;
+    }
+
     if (sLinkGSCTrade)
         return;
     sLinkGSCTrade = (struct LinkGSCTrade*)AllocZeroed(sizeof(struct LinkGSCTrade));
     sLinkGSCTrade->callback = callback;
     sLinkGSCTrade->bufferLengths[0] = SERIAL_RN_PREAMBLE_LENGTH + SERIAL_RNS_LENGTH;
-    sLinkGSCTrade->bufferLengths[1] = params->linkDataLength;
+    sLinkGSCTrade->bufferLengths[1] = linkDataParams->linkDataLength;
     sLinkGSCTrade->bufferLengths[2] = SERIAL_PATCH_LIST_LENGTH;
-    sLinkGSCTrade->bufferLengths[3] = params->mailDataLength;
+    sLinkGSCTrade->bufferLengths[3] = linkDataParams->mailDataLength;
     sLinkGSCTrade->payload = (u8 *)Alloc(gPayload_GSC_transfer_tool[0] >> 8);
     LZ77UnCompWram(gPayload_GSC_transfer_tool, sLinkGSCTrade->payload);
 
@@ -442,9 +564,9 @@ void SetupLinkGSCTrade(bool8 isJPN, NotifyStatusChangedCallback callback) {
     for (i = SERIAL_RN_PREAMBLE_LENGTH; i < SERIAL_RN_PREAMBLE_LENGTH + SERIAL_RNS_LENGTH; i++)
         sLinkGSCTrade->buffers[0][i] = (u8)i;
 
-    CreateLinkData(sLinkGSCTrade->buffers[1], params);
-    CreatePatchList(sLinkGSCTrade->buffers[2], sLinkGSCTrade->buffers[1], params);
-    CreateMailData(sLinkGSCTrade->buffers[3], params);
+    CreateLinkData(sLinkGSCTrade->buffers[1], linkDataParams, shellCodeParams, isGS);
+    CreatePatchList(sLinkGSCTrade->buffers[2], sLinkGSCTrade->buffers[1], linkDataParams);
+    CreateMailData(sLinkGSCTrade->buffers[3], linkDataParams, language);
 
     gIntrTable[1] = IntrSerial_LinkGSCTrade;
     gIntrTable[2] = IntrTimer3_LinkGSCTrade;

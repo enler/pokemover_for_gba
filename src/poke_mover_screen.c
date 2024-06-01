@@ -46,6 +46,7 @@
 #define tSelectedOption     data[3]
 #define tTutorialFrame      data[2]
 #define tTutorialCounter    data[3]
+#define tGameCart           data[4]
 #define tTransferingMonNum  data[13]
 #define tWindowId           data[14]
 #define tPokeStorageOption  data[15]
@@ -242,39 +243,49 @@ static const u8 gMsgUsageOfSendingTransferTool[] = _("开始发送前，请准�
                                                      "然后打开另外一台GBA的电源，\l"
                                                      "准备完成后，请按下A键。\p");
 
-static const u8 gMsgUsageStep1OfSendingTransferToolOverExploit[] = _("请准备一张“宝可梦 水晶版”的游戏卡带，\n"
-                                                                     "将使用该游戏中的漏洞发送传输工具，\p"
-                                                                     "请问你准备的卡带\n"
-                                                                     "是日语版还是国际版？");
+static const u8 gMsgExploitUsageStep1[] = _("请准备好“宝可梦 金/银/水晶版”的\n"
+                                            "游戏卡带，将使用游戏中的漏洞\l"
+                                            "发送传输工具。\p"
+                                            "请问你准备的卡带\n"
+                                            "是“金/银”还是“水晶版”？");
 
-static const u8 gMsgUsageStep2OfSendingTransferToolOverExploit[] = _("请将“宝可梦 水晶版”的游戏卡带\n"
-                                                                     "插入GBC，接着启动游戏，\l"
-                                                                     "来到宝可梦中心的连接交换柜台前，\l"
-                                                                     "然后用GB(C)连接线连接GBA跟GBC。\p"
-                                                                     "连接时请注意先后顺序，\n"
-                                                                     "先由GBA一方发起连接，\p"
-                                                                     "在GBA一方发起连接后，GBC一方\n"
-                                                                     "再跟柜台的工作人员对话进行连接。\p"
-                                                                     "准备完成后，\n"
-                                                                     "按下本机的A键发起连接。\p");
-                                                                     
-static const u8 gMsgUsageStep3OfSendingTransferToolOverExploit[] = _("接下来将使用漏洞发送传输工具，\n"
-                                                                     "为了确保正确触发漏洞，\l"
-                                                                     "请之后务必按照指定的步骤操作。\p");
-                                                                     
-static const u8 gMsgUsageStep4OfSendingTransferToolOverExploit[] = _("如图所示，请先移动到椅子的正下方，\n"
-                                                                     "然后，打开菜单，接着关闭菜单，\p"
-                                                                     "关闭菜单后，再向上走一步，\n"
-                                                                     "坐到椅子上之后，按A键进行连接。\p"
-                                                                     "准备完成后，\n"
-                                                                     "按下本机的A键继续。\p");
+static const u8 gMsgExploitUsageStep2[] = _("请问所选卡带的语言是哪一种？");
 
+static const u8 gMsgExploitUsageStep3[] = _("请将游戏卡带插入GB(C)，\n"
+                                            "接着启动游戏，\l"
+                                            "来到宝可梦中心的连接交换柜台前，\l"
+                                            "然后用GB(C)连接线连接GBA跟GB(C)。\p"
+                                            "连接时请注意先后顺序，\n"
+                                            "先由GBA一方发起连接，\p"
+                                            "在GBA一方发起连接后，GB(C)一方\n"
+                                            "再跟柜台的工作人员对话进行连接。\p"
+                                            "准备完成后，\n"
+                                            "按下本机的A键发起连接。\p");
+
+static const u8 gMsgExploitUsageStep4GS[] = _("接下来将使用漏洞发送传输工具，\n"
+                                              "请坐到椅子上，按A键进行连接。\p"
+                                              "准备完成后，\n"
+                                              "按下本机的A键继续。\p");
+
+static const u8 gMsgExploitUsageStep4Crystal[] = _("接下来将使用漏洞发送传输工具，\n"
+                                                   "为了确保正确触发漏洞，\l"
+                                                   "请之后务必按照指定的步骤操作。\p");
+
+static const u8 gMsgExploitUsageStep5Crystal[] = _("如图所示，请先移动到椅子的正下方，\n"
+                                                   "然后，打开菜单，接着关闭菜单，\p"
+                                                   "关闭菜单后，再向上走一步，\n"
+                                                   "坐到椅子上之后，按A键进行连接。\p"
+                                                   "准备完成后，\n"
+                                                   "按下本机的A键继续。\p");
 
 static const u8 gTextGBAOption[] = _("发送至GBA");
-static const u8 gTextGBCOption[] = _("发送至GBC");
-
+static const u8 gTextGBCOption[] = _("发送至GB(C)");
+static const u8 gTextGSOption[] = _("金/银");
+static const u8 gTextCrystalOption[] = _("水晶版");
 static const u8 gTextJPNOption[] = _("日语版");
 static const u8 gTextINTLOption[] = _("国际版");
+static const u8 gTextKOROPtion[] = _("韩语版");
+
 static const u8 gTextReturnOption[] = _("返回");
 
 static const u8 gTextSending[] = _("发送中……\n"
@@ -296,14 +307,15 @@ static const u8 gTextSendSuccessfullyGBA[] = _("发送成功，此时可以在�
                                                "成功插入了游戏卡带后，即可选择\n"
                                                "菜单中的“开始传输”进行传输。\p");
 static const u8 gTextSendSuccessfullyGBC[] = _("发送成功，如果想直接传输\n"
-                                               "当前GBC中的水晶版的宝可梦，\l"
-                                               "请直接在GBC上按下A键。\p"
+                                               "当前GB(C)游戏卡带里的宝可梦，\l"
+                                               "请直接在GB(C)上按下A键。\p"
                                                "如果想传输其他的卡带，\n"
-                                               "请先拔出GBC当前的游戏卡带，\l"
+                                               "请先拔出当前的游戏卡带，\l"
                                                "然后再插入其他的卡带。\p"
-                                               "拔出或插入卡带时有可能重启，\n"
+                                               "注意，只有GBC机型才能更换卡带，\n"
+                                               "并且更换卡带时有可能重启，\l"
                                                "请小心地进行操作。\p"
-                                               "建议把待传的宝可梦提前传入水晶版，\n"
+                                               "建议把待传的宝可梦提前传入，\n"
                                                "就可以免去更换卡带的麻烦。\p"
                                                "成功插入了游戏卡带后，即可选择\n"
                                                "菜单中的“开始传输”进行传输。\p");
@@ -345,10 +357,8 @@ static const u8 gTextInfoQ3[] = _("有哪些宝可梦不可传输");
 static const u8 gTextInfoQ4[] = _("昵称有何变化？");
 
 static const u8 gTextInfoA1[] = _("游戏主机方面，除了本机以外，\n"
-                                  "还需要再准备一台GBA(SP)或者GBC。\p"
-                                  "对于使用GBC进行连接的玩家，\n"
-                                  "还需要准备一张“宝可梦 水晶版”的\l"
-                                  "游戏卡带。\p"
+                                  "还需要再准备一台GBA(SP)\l"
+                                  "或者GB(C)。\p"
                                   "此外，请注意，\n"
                                   "使用GB(C)的连接线才能确保连接，\l"
                                   "GBA的连接线不可用。\p");
@@ -409,7 +419,14 @@ static const struct MenuAction sPokeMoverStartMenuItems[] =
 static const struct MenuAction sPokeMoverLanguageOptions[] =
 {
     {gTextJPNOption},
-    {gTextINTLOption}
+    {gTextINTLOption},
+    {gTextKOROPtion}
+};
+
+static const struct MenuAction sPokeMoverGameCartOptions[] =
+{
+    {gTextGSOption},
+    {gTextCrystalOption}
 };
 
 static const struct MenuAction sPokeMoverConsoleOptions[] =
@@ -531,6 +548,17 @@ static const struct WindowTemplate sWindowTemplate_PokeMoverLanguageOptions =
     .tilemapTop = 20 - ARRAY_COUNT(sPokeMoverLanguageOptions) * 2 - 7,
     .width = 0,
     .height = ARRAY_COUNT(sPokeMoverLanguageOptions) * 2,
+    .paletteNum = 15,
+    .baseBlock = TILEMAP_COMMON_BEGIN,
+};
+
+static const struct WindowTemplate sWindowTemplate_PokeMoverGameCartOptions =
+{
+    .bg = 0,
+    .tilemapLeft = 0,
+    .tilemapTop = 20 - ARRAY_COUNT(sPokeMoverGameCartOptions) * 2 - 7,
+    .width = 0,
+    .height = ARRAY_COUNT(sPokeMoverGameCartOptions) * 2,
     .paletteNum = 15,
     .baseBlock = TILEMAP_COMMON_BEGIN,
 };
@@ -1488,17 +1516,18 @@ static bool8 HandleSendingTransferToolToGBA(struct Task * task) {
 static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
     bool8 result = FALSE;
     s8 selectedOption;
+    u8 language;
+    struct WindowTemplate windowTemplate;
     switch (task->tSubState) {
     case 0:
         ExitLinkPokeMover();
         FillWindowPixelBuffer(0, PIXEL_FILL(1));
-        DrawMessage(gMsgUsageStep1OfSendingTransferToolOverExploit, 2);
+        DrawMessage(gMsgExploitUsageStep1, 2);
         task->tSubState++;
         break;
     case 1:
-        if (HandleMessage())
-        {
-            DrawOptions(sPokeMoverLanguageOptions, ARRAY_COUNT(sPokeMoverLanguageOptions), &sWindowTemplate_PokeMoverLanguageOptions, &task->tWindowId);
+        if (HandleMessage()) {
+            DrawOptions(sPokeMoverGameCartOptions, ARRAY_COUNT(sPokeMoverGameCartOptions), &sWindowTemplate_PokeMoverGameCartOptions, &task->tWindowId);
             CopyWindowToVram(task->tWindowId, COPYWIN_FULL);
             task->tSubState++;
         }
@@ -1506,7 +1535,7 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
     case 2:
         selectedOption = Menu_ProcessInput();
         if (selectedOption == 0 || selectedOption == 1) {
-            SetupLinkGSCTrade(selectedOption == 0, CB_NotifyStatusChangedForGSCLink);
+            task->tGameCart = selectedOption;
             ClearStdWindowAndFrame(task->tWindowId, TRUE);
             RemoveWindow(task->tWindowId);
             task->tSubState++;
@@ -1514,10 +1543,42 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         break;
     case 3:
         FillWindowPixelBuffer(0, PIXEL_FILL(1));
-        DrawMessage(gMsgUsageStep2OfSendingTransferToolOverExploit, 2);
+        DrawMessage(gMsgExploitUsageStep2, 2);
         task->tSubState++;
         break;
     case 4:
+        if (HandleMessage()) {
+            windowTemplate = sWindowTemplate_PokeMoverLanguageOptions;
+            if (task->tGameCart != 0) {
+                windowTemplate.height -= 2;
+                windowTemplate.tilemapTop += 2;
+            }
+            DrawOptions(sPokeMoverLanguageOptions, ARRAY_COUNT(sPokeMoverLanguageOptions) - (task->tGameCart != 0), &windowTemplate, &task->tWindowId);
+            CopyWindowToVram(task->tWindowId, COPYWIN_FULL);
+            task->tSubState++;
+        }
+        break;
+    case 5:
+        selectedOption = Menu_ProcessInput();
+        if (selectedOption >= 0) {
+            if (selectedOption == 0)
+                language = LANGUAGE_JAPANESE;
+            else if (selectedOption == 1)
+                language = LANGUAGE_ENGLISH;
+            else if (selectedOption == 2)
+                language = LANGUAGE_KOREAN;
+            SetupLinkGSCTrade(language, task->tGameCart == 0, CB_NotifyStatusChangedForGSCLink);
+            ClearStdWindowAndFrame(task->tWindowId, TRUE);
+            RemoveWindow(task->tWindowId);
+            task->tSubState++;
+        }
+        break;
+    case 6:
+        FillWindowPixelBuffer(0, PIXEL_FILL(1));
+        DrawMessage(gMsgExploitUsageStep3, 2);
+        task->tSubState++;
+        break;
+    case 7:
         if (HandleMessage())
         {
             TryHandshakeWithGSC();
@@ -1528,30 +1589,36 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
             task->tSubState++;
         }
         break;
-    case 5:
+    case 8:
         if (sPokeMoverContext->linkStatus.status == STATE_IDLE) {
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            DrawMessage(gMsgUsageStep3OfSendingTransferToolOverExploit, 2);
-            DecompressAndLoadBgGfxDirectly(crystalExploitTotorial_Gfx, TILEMAP_COMMON_BEGIN);
-            LoadPalette(crystalExploitTotorial_Pal, BG_PLTT_ID(8), 32);
-            task->tSubState++;
+            if (task->tGameCart == 0) {
+                DrawMessage(gMsgExploitUsageStep4GS, 2);
+                task->tSubState = 10;
+            }
+            else {
+                DrawMessage(gMsgExploitUsageStep4Crystal, 2);
+                DecompressAndLoadBgGfxDirectly(crystalExploitTotorial_Gfx, TILEMAP_COMMON_BEGIN);
+                LoadPalette(crystalExploitTotorial_Pal, BG_PLTT_ID(8), 32);
+                task->tSubState++;
+            }
         }
         else if (sPokeMoverContext->linkStatus.timer++ >= 1200) {
             DrawDelayedMessage(0, gTextSendToGBCUnsuccessfully0, 180);
             ExitLinkGSCTrade();
-            task->tSubState = 9;
+            task->tSubState = 12;
         }
         break;
-    case 6:
+    case 9:
         if (!FreeTempTileDataBuffersIfPossible() && HandleMessage()) {
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            DrawMessage(gMsgUsageStep4OfSendingTransferToolOverExploit, 2);
+            DrawMessage(gMsgExploitUsageStep5Crystal, 2);
             task->tTutorialFrame = 0;
             task->tTutorialCounter = 0;
             task->tSubState++;
         }
         break;
-    case 7:
+    case 10:
         if (HandleMessage()) {
             TryEnteringGSCTradeView();
             FillBgTilemapBufferRect(0, 0, 5, 2, 20, 10, 0);
@@ -1561,7 +1628,7 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
             sPokeMoverContext->linkStatus.timer = 0;
             task->tSubState++;
         }
-        else {
+        else if (task->tGameCart != 0) {
             if (task->tTutorialCounter == 0) {
                 task->tTutorialCounter = 90;
                 CopyRectToBgTilemapBufferRect(0, (const u16 *)&crystalExploitTotorial_Tilemap[0] + 20 * 10 * task->tTutorialFrame, 0, 0, 20, 10, 5, 2, 20, 10, 0, TILEMAP_COMMON_BEGIN - 1, 8);
@@ -1569,15 +1636,15 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
                 if (++task->tTutorialFrame >= 5)
                     task->tTutorialFrame = 0;
             }
-            task->tTutorialCounter--;
+                task->tTutorialCounter--;
         }
         break;
-    case 8:
+    case 11:
         if (sPokeMoverContext->linkStatus.status == STATE_SENDING_PAYLOAD_COMPLETELY) {
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
             DrawMessage(gTextSendSuccessfullyGBC, 2);
             ExitLinkGSCTrade();
-            task->tSubState = 10;
+            task->tSubState = 13;
         }
         else if (sPokeMoverContext->linkStatus.timer++ >= 600) {
             DrawDelayedMessage(0, gTextSendToGBCUnsuccessfully1, 180);
@@ -1588,11 +1655,11 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
             sPokeMoverContext->linkStatus.timer = 0;
         sPokeMoverContext->linkStatus.newDataReached = FALSE;
         break;
-    case 9:
+    case 12:
         if (HandleDelayedMessage(A_BUTTON))
             result = TRUE;
         break;
-    case 10:
+    case 13:
         if (HandleMessage())
             result = TRUE;
         break;

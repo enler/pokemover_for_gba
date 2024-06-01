@@ -52,7 +52,7 @@ OBJS_REL := $(patsubst $(OBJ_DIR)/%,%,$(ALL_OBJS))
 TOOLDIRS := tools/gbafix tools/gbagfx tools/preproc tools/scaninc tools/blz
 
 ASFLAGS	:= -mcpu=arm7tdmi $(foreach dir,$(INC_DIRS),-I $(dir))
-CFLAGS	:= -Os -mthumb -mthumb-interwork -mabi=apcs-gnu -mtune=arm7tdmi -march=armv4t -fno-toplevel-reorder -Wno-pointer-to-int-cast -DMODERN=1 -Wno-multichar
+CFLAGS	:= -g -Os -mthumb -mthumb-interwork -mabi=apcs-gnu -mtune=arm7tdmi -march=armv4t -fno-toplevel-reorder -Wno-pointer-to-int-cast -DMODERN=1 -Wno-multichar
 CPPFLAGS:= $(foreach dir,$(INC_DIRS),-iquote $(dir))  -Wno-trigraphs -DMODERN=1
 
 LIBPATH := -L "$(dir $(shell $(CC) -mthumb -print-file-name=libgcc.a))" -L "$(dir $(shell $(CC) -mthumb -print-file-name=libnosys.a))" -L "$(dir $(shell $(CC) -mthumb -print-file-name=libc.a))"
