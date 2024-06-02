@@ -292,7 +292,7 @@ static const u8 gTextSending[] = _("发送中……\n"
                                    "请勿关闭电源或拔出游戏卡带。");
 static const u8 gTextSendUnsuccessfully[] = _("发送失败，\n"
                                               "请检查连接是否正确。");
-static const u8 gTextLinkToGSC[] = _("正在与“宝可梦 水晶版”建立连接，\n"
+static const u8 gTextLinkToGSC[] = _("正在与“宝可梦 {STR_VAR_1}”建立连接，\n"
                                      "请与连接交换柜台的工作人员对话。");
 static const u8 gTextSendToGBCUnsuccessfully0[] = _("发送失败，\n"
                                                     "没能进入连接交换的房间。");
@@ -1583,7 +1583,9 @@ static bool8 HandleSendingTransferToolToGBC(struct Task * task) {
         {
             TryHandshakeWithGSC();
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
-            DrawText(0, gTextLinkToGSC, 0, 0, NULL, TRUE);
+            StringCopy(gStringVar1, task->tGameCart == 0 ? gTextGSOption : gTextCrystalOption);
+            StringExpandPlaceholders(gStringVar2, gTextLinkToGSC);
+            DrawText(0, gStringVar2, 0, 0, NULL, TRUE);
             sPokeMoverContext->linkStatus.status = ~STATE_IDLE;
             sPokeMoverContext->linkStatus.timer = 0;
             task->tSubState++;

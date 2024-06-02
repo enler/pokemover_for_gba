@@ -102,10 +102,9 @@ static struct LinkGSCTrade *sLinkGSCTrade;
 const u8 gShellCode_Trade_GS_INTL[] = INCBIN_U8("data/shellcode_trade_gs_intl.bin");
 const u8 gShellCode_Trade_GS_JPN[] = INCBIN_U8("data/shellcode_trade_gs_jpn.bin");
 const u8 gShellCode_Trade_GS_KOR[] = INCBIN_U8("data/shellcode_trade_gs_kor.bin");
-const u8 gShellCode_Trade_Crystal_JPN[] = INCBIN_U8("data/shellcode_trade_gsc_jpn.bin");
-const u8 gShellCode_Trade_Crystal_INTL[] = INCBIN_U8("data/shellcode_trade_gsc_intl.bin");
+const u8 gShellCode_Trade_Crystal_JPN[] = INCBIN_U8("data/shellcode_trade_crystal_jpn.bin");
+const u8 gShellCode_Trade_Crystal_INTL[] = INCBIN_U8("data/shellcode_trade_crystal_intl.bin");
 const u32 gPayload_GSC_transfer_tool[] = INCBIN_U32("data/payload_GSC_transfer_tool.bin.lz");
-
 
 static const struct LinkDataParams sLinkDataParamsGSCJPN = {
     .linkDataLength = sizeof(struct LinkGSCPlayerDataJPN),
