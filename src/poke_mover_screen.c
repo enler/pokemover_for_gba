@@ -1489,6 +1489,7 @@ static bool8 HandleSendingTransferToolToGBA(struct Task * task) {
                 task->tSubState++;
             else
                 task->tSubState += 2;
+            FREE_AND_SET_NULL(ptr);
             break;
         case 2:
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
@@ -1500,8 +1501,6 @@ static bool8 HandleSendingTransferToolToGBA(struct Task * task) {
             task->tSubState = 4;
             break;
         case 4:
-            ptr = (u8*)GetWordTaskArg(0, 4);
-            FREE_AND_SET_NULL(ptr);
             if (HandleDelayedMessage(A_BUTTON | B_BUTTON))
                 result = TRUE;
             break;
