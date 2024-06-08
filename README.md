@@ -20,16 +20,19 @@ Pokémover For GBA是宝可梦第二世代到第三世代的跨代传宠用GBA�
 ----
 
 本工具的原理是使用一台gba主机读取gba宝可梦系列的存档，  
-然后通过gb(c)连接线连接另外一台作为副机的gba/gbc，  
+然后通过gb(c)连接线连接另外一台作为副机的gba/gb/gbc，  
 利用连接线发送传输工具至副机，  
 在副机上读取金银水晶的存档，然后将盒子中的宝可梦传到主机中。  
 
 为了顺利发送传输工具，  
 副机为gba时，利用了multiboot，以及切换至gb模式的隐藏特性，  
-副机为gbc时，利用了速通社区发现的一个水晶版的漏洞，利用这个漏洞实现了远程代码执行  
+副机为gb/gbc时，利用漏洞实现了远程代码执行，然后再发送传输工具  
+（其中水晶版利用了速通社区发现的漏洞，原定在儿童节前后发布的v1.0，只包括了水晶版的漏洞利用，  
+但在v1.0发布前夕我们发现了金银中新的漏洞利用方式，故而推迟了发布）  
 
 演示视频
---------
+-------- 
+[视频地址](https://www.bilibili.com/video/BV1jS411N7Kh)  
 
 编译
 ----
@@ -37,6 +40,7 @@ Pokémover For GBA是宝可梦第二世代到第三世代的跨代传宠用GBA�
 先安装devkitpro，然后执行如下命令
 
     git clone https://github.com/enler/pokemover_for_gba.git
+    cd pokemover_for_gba
     git submodule update --init
 
 接着使用如下命令编译
@@ -49,7 +53,7 @@ Pokémover For GBA是宝可梦第二世代到第三世代的跨代传宠用GBA�
 程序：[enler](https://github.com/enler)  
 协力、测试：[卧看微尘](https://github.com/Wokann)  
 美术：crossztc  
-测试存档提供：海のLUGIA  
+测试存档提供：海のLUGIA Tom_C  
 
 以下是开发过程中参考的来自海外社区的成果  
 

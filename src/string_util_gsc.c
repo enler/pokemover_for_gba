@@ -659,7 +659,7 @@ u16 IdentifyInvalidNameChars(u8 *str, size_t maxLen, u8 strLang, const u8 *origS
     origChars[i] = 0x50;
 
     for (i = 0, j = 0; i < ARRAY_COUNT(chars) - 1 && str[j] != EOS; i++) {
-        if ((isGSKorean || isCrystalCHS) && str[j + 1] != EOS) {
+        if (strLang == LANGUAGE_CHINESE && str[j + 1] != EOS) {
             hi = str[j];
             if ((hi >= 0x01 && hi <= 0x1E) && (hi != 0x06 || hi != 0x1B)) {
                 chars[i] = (hi << 8) | str[j + 1];
