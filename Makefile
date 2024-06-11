@@ -4,35 +4,37 @@ ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM)
 endif
 
-NAME	:= pokemover_for_gba
-ELF		:= $(NAME).elf
-ROM		:= $(NAME).gba
-SYM		:= $(NAME).sym
+NAME    := pokemover_for_gba
+ELF     := $(NAME).elf
+ROM     := $(NAME).gba
+SYM     := $(NAME).sym
+MAJOR   := 1
+MINOR   := 1
 
-PREFIX	:= $(DEVKITARM)/bin/arm-none-eabi-
-CC		:= $(PREFIX)gcc
-OBJCOPY	:= $(PREFIX)objcopy
-OBJDUMP	:= $(PREFIX)objdump
-AS		:= $(PREFIX)as
-LD		:= $(PREFIX)ld
-CC1		:= $(shell $(CC) --print-prog-name=cc1) -quiet
-CPP		:= $(PREFIX)cpp
-AR		:= $(PREFIX)ar
+PREFIX  := $(DEVKITARM)/bin/arm-none-eabi-
+CC      := $(PREFIX)gcc
+OBJCOPY := $(PREFIX)objcopy
+OBJDUMP := $(PREFIX)objdump
+AS      := $(PREFIX)as
+LD      := $(PREFIX)ld
+CC1     := $(shell $(CC) --print-prog-name=cc1) -quiet
+CPP     := $(PREFIX)cpp
+AR      := $(PREFIX)ar
 
-PREPROC	:= tools/preproc/preproc
+PREPROC := tools/preproc/preproc
 SCANINC := tools/scaninc/scaninc
 RAMSCRGEN := tools/ramscrgen/ramscrgen
-GBAFIX	:= tools/gbafix/gbafix
-GFX		:= tools/gbagfx/gbagfx
-PERL	:= perl
-BLZ		:= tools/blz/blz
-BLZFIX	:= tools/blz/fix.sh
+GBAFIX  := tools/gbafix/gbafix
+GFX     := tools/gbagfx/gbagfx
+PERL    := perl
+BLZ     := tools/blz/blz
+BLZFIX  := tools/blz/fix.sh
 
-OBJ_DIR := build
+OBJ_DIR  := build
 SUB_REPO := pokeemerald
 INC_DIRS := include gflib $(SUB_REPO) $(SUB_REPO)/include $(SUB_REPO)/gflib $(SUB_REPO)/src
-SUBDIRS := src data gflib
-GFLIB	:= $(OBJ_DIR)/gflib.a
+SUBDIRS  := src data gflib
+GFLIB    := $(OBJ_DIR)/gflib.a
 
 ASM_SRCS := $(wildcard src/*.s)
 ASM_OBJS := $(ASM_SRCS:%.s=$(OBJ_DIR)/%.o)
@@ -56,10 +58,11 @@ CFLAGS	:= -g -Os -mthumb -mthumb-interwork -mabi=apcs-gnu -mtune=arm7tdmi -march
 CPPFLAGS:= $(foreach dir,$(INC_DIRS),-iquote $(dir))  -Wno-trigraphs -DMODERN=1
 
 LIBPATH := -L "$(dir $(shell $(CC) -mthumb -print-file-name=libgcc.a))" -L "$(dir $(shell $(CC) -mthumb -print-file-name=libnosys.a))" -L "$(dir $(shell $(CC) -mthumb -print-file-name=libc.a))"
-LIBS	:= gflib.a $(LIBPATH) -lc -lgcc
+LIBS    := gflib.a $(LIBPATH) -lc -lgcc
 
 $(GFLIB_C_OBJS) : CFLAGS += -ffunction-sections -fdata-sections
 
+$(OBJ_DIR)/src/poke_mover_screen.o: CPPFLAGS += -DVER_MAJOR=$(MAJOR) -DVER_MINOR=$(MINOR)
 $(OBJ_DIR)/src/math_fast.o: CFLAGS := -mthumb-interwork -O3 -mtune=arm7tdmi -march=armv4t
 
 $(shell mkdir -p $(SUBDIRS:%=$(OBJ_DIR)/%) graphics/interface graphics/pokedex graphics/spinda_spots graphics/text_window graphics/pokemon_storage/wallpapers)

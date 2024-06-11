@@ -68,6 +68,14 @@
 #define FLAG_GET(id) ((gSaveFlags[(id) / 8] >> ((id) % 8)) & 1)
 #define FLAG_SET(id) gSaveFlags[(id) / 8] |= (1 << ((id) % 8))
 
+#ifndef VER_MAJOR
+#define VER_MAJOR 0
+#endif
+
+#ifndef VER_MINOR
+#define VER_MINOR 0
+#endif
+
 struct Wallpaper
 {
     const u32 *tiles;
@@ -403,7 +411,7 @@ static const u8 gTextInfoA4[] = _("对于宝可梦的昵称以及初训家名，
                                   "将改成跟日语版圆形竞技场的\l"
                                   "时拉比一致。\p");
 
-extern const u8 gTextSoftVersion[];
+static const u8 gTextSoftVersion[] = _("版本:v{STR_VAR_1}.{STR_VAR_2}");
 
 const u32 gMultiBootProgram_GSC_Transfer_Tool[] = INCBIN_U32("data/mb_GSC_transfer_tool.gba.lz");
 
@@ -2266,7 +2274,10 @@ static s32 HandleInfoView(struct Task * task) {
         case 0:
             FillWindowPixelBuffer(0, PIXEL_FILL(1));
             DrawText(0, gTextAskForInfo, 0, 0, NULL, FALSE);
-            DrawText(0, gTextSoftVersion, gWindows[0].window.width * 8 - GetStringWidth(FONT_NORMAL, gTextSoftVersion, 0),
+            ConvertIntToDecimalStringN(gStringVar1, VER_MAJOR, STR_CONV_MODE_LEFT_ALIGN, 2);
+            ConvertIntToDecimalStringN(gStringVar2, VER_MINOR, STR_CONV_MODE_LEFT_ALIGN, 2);
+            StringExpandPlaceholders(gStringVar3, gTextSoftVersion);
+            DrawText(0, gStringVar3, gWindows[0].window.width * 8 - GetStringWidth(FONT_NORMAL, gStringVar3, 0),
                      gWindows[0].window.height * 8 - 16, NULL, TRUE);
             task->tSubState++;
             break;
