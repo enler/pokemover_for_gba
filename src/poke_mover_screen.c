@@ -43,7 +43,6 @@
 #define tSubState           data[1]
 #define tBoxState           data[2]
 #define tLegalityViewState  data[2]
-#define tSelectedOption     data[3]
 #define tTutorialFrame      data[2]
 #define tTutorialCounter    data[3]
 #define tGameCart           data[4]
@@ -127,7 +126,7 @@ struct BoxDataSource {
     u8 iconWidth;
     u8 iconHeight;
     u16 (*GetBoxMonIconSpecies)(u8 box, u8 row, u8 column, bool8 * isTransparent);
-    void (*GetLocalBoxTitle)(u8 box, u8 *boxTitle);
+    void (*GetBoxTitle)(u8 box, u8 *boxTitle);
     const struct Wallpaper * (*GetWallpaper)(u8 box, bool8 * isWaldaWallpaper);
 };
 
@@ -675,7 +674,7 @@ static const struct BoxDataSource localBoxDataSource = {
     .iconWidth = 24,
     .iconHeight = 24,
     .GetBoxMonIconSpecies = GetMonIconSpeciesFromLocalBox,
-    .GetLocalBoxTitle = GetLocalBoxTitle,
+    .GetBoxTitle = GetLocalBoxTitle,
     .GetWallpaper = GetLocalBoxWallpaper
 };
 
@@ -688,7 +687,7 @@ static const struct BoxDataSource gscJPNBoxDataSource = {
     .iconWidth = 24,
     .iconHeight = 24,
     .GetBoxMonIconSpecies = GetMonIconSpeciesFromGSCBox,
-    .GetLocalBoxTitle = GetGSCBoxTitle,
+    .GetBoxTitle = GetGSCBoxTitle,
     .GetWallpaper = GetGSCBoxWallpaper
 };
 
@@ -701,7 +700,7 @@ static const struct BoxDataSource gscINTLBoxDataSource = {
     .iconWidth = 28,
     .iconHeight = 30,
     .GetBoxMonIconSpecies = GetMonIconSpeciesFromGSCBox,
-    .GetLocalBoxTitle = GetGSCBoxTitle,
+    .GetBoxTitle = GetGSCBoxTitle,
     .GetWallpaper = GetGSCBoxWallpaper
 };
 
@@ -918,20 +917,6 @@ static void InitTextView() {
     sPokeMoverContext->boxView.gscPlayerTrainerIdWinId = AddWindow(&sWindowTemplates[2]);
 }
 
-static void DrawStartMenu(u8 cursorPos, s16 *windowIdPtr)
-{
-    s16 windowId;
-    struct WindowTemplate template = sWindowTemplate_PokeMoverStartMenu;
-    template.width = GetMaxWidthInMenuTable(sPokeMoverStartMenuItems, ARRAY_COUNT(sPokeMoverStartMenuItems));
-    template.tilemapLeft = 30 - template.width - 1;
-    windowId = AddWindow(&template);
-
-    DrawStdWindowFrame(windowId, FALSE);
-    PrintMenuTable(windowId, ARRAY_COUNT(sPokeMoverStartMenuItems), sPokeMoverStartMenuItems);
-    InitMenuNormal(windowId, FONT_NORMAL, 0, 0, 16, ARRAY_COUNT(sPokeMoverStartMenuItems), cursorPos);
-    *windowIdPtr = windowId;
-}
-
 static void DrawOptions(const struct MenuAction *menuAction, u8 numOptions, const struct WindowTemplate *template, s16 *windowIdPtr) {
     s16 windowId;
     struct WindowTemplate templateAlt = *template;
@@ -1066,28 +1051,28 @@ static void CreateIncomingBoxMonIcon(u8 box, int direction) {
 static void CreateIncomingBoxTitle(int direction) {
     u8 box, boxTitle[16], *boxTitleTile, x;
     u32 tileOffset;
-    int i, j;
+    s32 i, j;
     const struct BoxDataSource *dataSource = sPokeMoverContext->boxView.boxDataSource;
+    struct IncomingSprite *incomingSpr;
     box = sPokeMoverContext->boxView.currentBox;
-    dataSource->GetLocalBoxTitle(box, boxTitle);
+    dataSource->GetBoxTitle(box, boxTitle);
     boxTitleTile = AllocZeroed(64 * 16 / 2);
     DrawTextWindowAndBufferTiles(boxTitle, boxTitleTile, 0, 0, 2);
     tileOffset = sPokeMoverContext->boxView.slot == 0 ? BOX_TITLE_SLOT_0_TILE_OFFSET : BOX_TITLE_SLOT_1_TILE_OFFSET;
     CpuCopy16(boxTitleTile, (void *)(OBJ_VRAM0 + tileOffset), 512);
     x = DISPLAY_WIDTH - 64 - GetStringWidth(FONT_NORMAL, boxTitle, 0) / 2;
-    for (i = 0; i < 2; i++)
-    {
-        for (j = 0; j < ARRAY_COUNT(sPokeMoverContext->spriteMgr.incomingSprites); j++)
-        {
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < ARRAY_COUNT(sPokeMoverContext->spriteMgr.incomingSprites); j++) {
             if (sPokeMoverContext->spriteMgr.incomingSprites[j] == NULL) {
-                sPokeMoverContext->spriteMgr.incomingSprites[j] = AllocZeroed(sizeof(struct IncomingSprite));
-                sPokeMoverContext->spriteMgr.incomingSprites[j]->paletteTag = PALTAG_BOXTITLE;
-                sPokeMoverContext->spriteMgr.incomingSprites[j]->posX = 192 * direction + x + i * 32;
-                sPokeMoverContext->spriteMgr.incomingSprites[j]->posY = 12;
-                sPokeMoverContext->spriteMgr.incomingSprites[j]->priority = 2;
-                sPokeMoverContext->spriteMgr.incomingSprites[j]->template = &sSpriteTemplate_BoxTitle;
-                sPokeMoverContext->spriteMgr.incomingSprites[j]->subpriority = 24;
-                sPokeMoverContext->spriteMgr.incomingSprites[j]->tileNum = (tileOffset + i * 32 * 16 / 2) / TILE_SIZE_4BPP;
+                incomingSpr = AllocZeroed(sizeof(struct IncomingSprite));
+                incomingSpr->paletteTag = PALTAG_BOXTITLE;
+                incomingSpr->posX = 192 * direction + x + i * 32;
+                incomingSpr->posY = 12;
+                incomingSpr->priority = 2;
+                incomingSpr->template = &sSpriteTemplate_BoxTitle;
+                incomingSpr->subpriority = 24;
+                incomingSpr->tileNum = (tileOffset + i * 32 * 16 / 2) / TILE_SIZE_4BPP;
+                sPokeMoverContext->spriteMgr.incomingSprites[j] = incomingSpr;
                 break;
             }
         }
@@ -1132,7 +1117,7 @@ static void DrawBoxTitle(u8 box) {
     int i;
     struct SpriteTemplate template;
     const struct BoxDataSource *dataSource = sPokeMoverContext->boxView.boxDataSource;
-    dataSource->GetLocalBoxTitle(box, boxTitle);
+    dataSource->GetBoxTitle(box, boxTitle);
     boxTitleTile = AllocZeroed(64 * 16 / 2);
     DrawTextWindowAndBufferTiles(boxTitle, boxTitleTile, 0, 0, 2);
     tileOffset = sPokeMoverContext->boxView.slot == 0 ? BOX_TITLE_SLOT_0_TILE_OFFSET : BOX_TITLE_SLOT_1_TILE_OFFSET;
@@ -2027,12 +2012,13 @@ static int HandleRecvingView(struct Task *task) {
             }
             break;
         case 6:
-            sPokeMoverContext->boxView.currentBox = sPokeMoverContext->boxView.gscBox;
-            sPokeMoverContext->boxView.latestBox = 255;
             if (sPokeMoverContext->baseData.gameLang == LANGUAGE_JAPANESE)
                 sPokeMoverContext->boxView.boxDataSource = &gscJPNBoxDataSource;
             else
                 sPokeMoverContext->boxView.boxDataSource = &gscINTLBoxDataSource;
+            sPokeMoverContext->boxView.gscBox = min(sPokeMoverContext->boxView.gscBox, sPokeMoverContext->boxView.boxDataSource->maxBoxCount - 1);
+            sPokeMoverContext->boxView.currentBox = sPokeMoverContext->boxView.gscBox;
+            sPokeMoverContext->boxView.latestBox = 255;
             task->tSubState++;
             task->tBoxState = 0;
             break;
@@ -2100,7 +2086,7 @@ static int HandleRecvingView(struct Task *task) {
         case 12:
         case 18:
             ptr = task->tSubState == 12 ? gTextConfirmTransferingBox : gTextConfirmReceivingBox;
-            sPokeMoverContext->boxView.boxDataSource->GetLocalBoxTitle(sPokeMoverContext->boxView.currentBox, tempBuff);
+            sPokeMoverContext->boxView.boxDataSource->GetBoxTitle(sPokeMoverContext->boxView.currentBox, tempBuff);
             StringCopy(gStringVar1, tempBuff);
             StringExpandPlaceholders(gStringVar2, ptr);
             DrawText(0, gStringVar2, 0, 0, NULL, TRUE);
@@ -2331,10 +2317,9 @@ static s32 HandleInfoView(struct Task * task) {
     return 0;
 }
 
-static void Task_HandlePokeMoverMenu(u8 taskId)
-{
+static void Task_HandlePokeMoverMenu(u8 taskId) {
     struct Task *task = &gTasks[taskId];
-    int result;
+    s8 selectedOption;
     switch (task->tState)
     {
         case 0:
@@ -2343,22 +2328,20 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
             task->tState++;
             break;
         case 1:
-            DrawStartMenu(task->tSelectedOption, &task->tWindowId);
+            DrawOptions(sPokeMoverStartMenuItems, ARRAY_COUNT(sPokeMoverStartMenuItems), &sWindowTemplate_PokeMoverStartMenu, &task->tWindowId);
             CopyWindowToVram(task->tWindowId, COPYWIN_FULL);
             task->tState++;
             break;
         case 2:
-            task->tSelectedOption = Menu_ProcessInput();
-            if (task->tSelectedOption == 0)
-            {
+            selectedOption = Menu_ProcessInput();
+            if (selectedOption == 0) {
                 ClearStdWindowAndFrame(task->tWindowId, TRUE);
                 RemoveWindow(task->tWindowId);
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
                 DrawText(0, gMsgAskForConsole, 0, 0, NULL, TRUE);
                 task->tState = 3;
             }
-            else if (task->tSelectedOption == 1)
-            {
+            else if (selectedOption == 1) {
                 ClearStdWindowAndFrame(task->tWindowId, TRUE);
                 RemoveWindow(task->tWindowId);
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
@@ -2366,15 +2349,13 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
                 SetupLinkPokeMover(CB_NotifyStatusChanged);
                 task->tState = 8;
             }
-            else if (task->tSelectedOption == 2)
-            {
+            else if (selectedOption == 2) {
                 ClearStdWindowAndFrame(task->tWindowId, TRUE);
                 RemoveWindow(task->tWindowId);
                 task->tState = 10;
                 task->tSubState = 0;
             }
-            else if (task->tSelectedOption == 3 || JOY_NEW(A_BUTTON))
-            {
+            else if (selectedOption == 3 || JOY_NEW(B_BUTTON)) {
                 task->tState = 11;
             }
             break;
@@ -2384,29 +2365,28 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
             task->tState++;
             break;
         case 4:
-            result = Menu_ProcessInput();
-            if (result == 0) {
+            selectedOption = Menu_ProcessInput();
+            if (selectedOption == 0) {
                 ClearStdWindowAndFrame(task->tWindowId, TRUE);
                 RemoveWindow(task->tWindowId);
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
                 DrawMessage(gMsgUsageOfSendingTransferTool, 2);
                 task->tState++;
             }
-            else if (result == 1) {
+            else if (selectedOption == 1) {
                 ClearStdWindowAndFrame(task->tWindowId, TRUE);
                 RemoveWindow(task->tWindowId);
                 task->tState = 7;
                 task->tSubState = 0;
             }
-            else if (result == 2 || JOY_NEW(B_BUTTON)) {
+            else if (selectedOption == 2 || JOY_NEW(B_BUTTON)) {
                 ClearStdWindowAndFrame(task->tWindowId, TRUE);
                 RemoveWindow(task->tWindowId);
                 task->tState = 0;
             }
             break;
         case 5:
-            if (HandleMessage())
-            {
+            if (HandleMessage()) {
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
                 DrawText(0, gTextSending, 0, 0, NULL, TRUE);
                 task->tState++;
@@ -2422,8 +2402,7 @@ static void Task_HandlePokeMoverMenu(u8 taskId)
                 task->tState = 0;
             break;
         case 8:
-            if (HandleMessage())
-            {
+            if (HandleMessage()) {
                 FillWindowPixelBuffer(0, PIXEL_FILL(1));
                 DrawText(0, gTextLinking, 0, 0, NULL, TRUE);
                 task->tState++;
